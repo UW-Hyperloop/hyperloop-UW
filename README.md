@@ -8,7 +8,9 @@ If this is your first time in this repo, make a branch with your name in format 
 
 **Contributor list:**   
 Soham Raut
+
 Daniel Nordgren  
+
 Kaito Yan
 
 
