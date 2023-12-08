@@ -23,13 +23,68 @@ void setup() {
   pinMode(cut1, OUTPUT);
   pinMode(cut2, OUTPUT);
   pinMode(cutENA, OUTPUT);
-
   Serial.begin(9600);
 }
 
 void loop() {
-  testCutterHead();
+  if (Serial.available()) {
+    char direction = Serial.read();
+    drive(direction);
+  }
+}
 
+// can input l, r, f, b, c (cut), and s (stop cutterhead) through serial monitor
+// if left and right wheels are going different directions, switch the wiring of one
+void drive(char direction) {
+  // right wheel goes faster when turning left
+  if (direction == 'l') {
+    Serial.println("left");
+    digitalWrite(leftWheel1, HIGH);
+    digitalWrite(leftWheel2, LOW);
+    digitalWrite(rightWheel1, HIGH);
+    digitalWrite(rightWheel2, LOW);
+    analogWrite(wheelENA, 150);
+    analogWrite(wheelENB, 255);
+  }
+  else if (direction == 'r') {
+    Serial.println("right");
+    digitalWrite(leftWheel1, HIGH);
+    digitalWrite(leftWheel2, LOW);
+    digitalWrite(rightWheel1, HIGH);
+    digitalWrite(rightWheel2, LOW);
+    analogWrite(wheelENA, 255);
+    analogWrite(wheelENB, 150);
+  }
+  else if (direction == 'f') {
+    Serial.println("forward");
+    digitalWrite(leftWheel1, HIGH);
+    digitalWrite(leftWheel2, LOW);
+    digitalWrite(rightWheel1, HIGH);
+    digitalWrite(rightWheel2, LOW);
+    analogWrite(wheelENA, 255);
+    analogWrite(wheelENB, 255);
+  }
+  else if (direction == 'b') {
+    Serial.println("backward");
+    digitalWrite(leftWheel1, LOW);
+    digitalWrite(leftWheel2, HIGH);
+    digitalWrite(rightWheel1, LOW);
+    digitalWrite(rightWheel2, HIGH);
+    analogWrite(wheelENA, 255);
+    analogWrite(wheelENB, 255);
+  }
+  else if (direction == 'c') {
+    Serial.println("cut");
+    runCutterHead("right", 255);
+  }
+  else if (direction == 's') {
+    Serial.println("stop cut");
+    runCutterHead("right", 0);
+  }
+  // Drive for 500 ms then stop
+  delay(500);
+  analogWrite(wheelENA, 0);
+  analogWrite(wheelENB, 0);
 }
 
 // direction should be a string, left or right
