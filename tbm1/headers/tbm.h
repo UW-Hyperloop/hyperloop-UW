@@ -26,9 +26,9 @@ struct sys_json {
     char* state;     // one of the macros (14-17)
     Sensor motor_temp;
     Sensor circuit_temp;
-    Sensor rpm;
-    Sensor press_in;
-    Sensor press_out;
+    // Sensor rpm;
+    // Sensor press_in;
+    // Sensor press_out;
     Sensor flow;
     signed int global_time;
 };
