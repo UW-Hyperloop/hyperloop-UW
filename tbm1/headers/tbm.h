@@ -5,8 +5,8 @@
 // #define PRESS_OUT_PIN 27
 #define FLOW_PIN 12
 
-#define MOTOR_OUT_PIN 17
-#define PUMP_OUT_PIN 16
+//#define MOTOR_OUT_PIN xx
+//#define PUMP_OUT_PIN xx
 
 #define SENSOR_API "/sensor"
 #define CONFIG_API "/config"
