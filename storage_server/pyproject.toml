@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "storage-server"
+version = "0.1.0"
+description = ""
+authors = ["Pop101"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "^3.12"
+Flask = "^3.0.3"
+waitress = "^3.0.0"
+APScheduler = "^3.10.4"
+anyascii = "^0.3.2"
+Flask-SocketIO = "^5.4.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
