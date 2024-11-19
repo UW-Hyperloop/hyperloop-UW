@@ -1,4 +1,4 @@
-#include "./headers/tbm.h"
+#include "../headers/tbm.h"
 
 char *state;
 
