@@ -1,12 +1,17 @@
-#define MOTOR_TEMP_PIN 36
-#define CIRCUIT_TEMP_PIN 34
-// #define RPM_PIN 32
-// #define PRESS_IN_PIN 25
-// #define PRESS_OUT_PIN 27
-#define FLOW_PIN 12
+#define RX 16
+#define TX 17
+#define ESTOPCTRL_PIN 18
+#define MOTORCTRL_PIN 19
+#define PUMPCTRL_PIN 21
 
-//#define MOTOR_OUT_PIN xx
-//#define PUMP_OUT_PIN xx
+#define MOTORSENSE_PIN 22
+#define PUMPSENSE_PIN 23
+#define BENTCTRL_PIN 25
+#define ESTOPSENSE_PIN 33
+#define MOTOR_TEMP_PIN 34
+#define FLOW_TEMP_PIN 35
+#define FLOW_IN_PIN 12
+#define FLOW_OUT_PIN 13
 
 #define SENSOR_API "/sensor"
 #define CONFIG_API "/config"
@@ -23,12 +28,14 @@ struct Sensor {
 };
 
 struct sys_json {
-    char* state;     // one of the macros (14-17)
+    const char* state;     // one of the state macros
     Sensor motor_temp;
-    Sensor circuit_temp;
-    // Sensor rpm;
-    // Sensor press_in;
-    // Sensor press_out;
-    Sensor flow;
+    Sensor flow_temp;
+    Sensor flow_in;
+    Sensor flow_out;
+    Sensor motor_power; // val should be 1 if there is power
+    Sensor pump_power; // val should be 1 if there is power
+    Sensor bentonite_power; // val should be 1 if there is power
+    Sensor estop_button; // val should be 1 if e-stop is pressed
     signed int global_time;
 };
