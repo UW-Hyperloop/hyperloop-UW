@@ -75,9 +75,9 @@ export default function Home() {
           <div className={styles.tempContainer}>
             <div className={styles.meterTitle}>Motor Temperature</div>
             <CircularMeter 
-              id={0} min={0} max={110} data={motorTemp} partitions={10} units={"°F"} size={150}
+              id={0} min={40} max={110} data={motorTemp} partitions={10} units={"°F"} size={150}
               colorRanges={[
-                { min: 0, max: 65, color: 'red' },      // Critical low
+                { min: 40, max: 65, color: 'red' },      // Critical low
                 { min: 65, max: 75, color: 'yellow' },  // Warning low
                 { min: 75, max: 85, color: 'green' },   // Safe range
                 { min: 85, max: 90, color: 'yellow' },  // Warning high
@@ -88,9 +88,9 @@ export default function Home() {
           <div className={styles.tempContainer}>
             <div className={styles.meterTitle}>Pump Temperature</div>
             <CircularMeter 
-              id={1} min={0} max={200} data={pumpTemp} partitions={10} units={"°F"} size={150}
+              id={1} min={40} max={200} data={pumpTemp} partitions={10} units={"°F"} size={150}
               colorRanges={[
-                { min: 0, max: 65, color: 'red' },      // Critical low
+                { min: 40, max: 65, color: 'red' },      // Critical low
                 { min: 65, max: 85, color: 'yellow' },  // Warning low
                 { min: 85, max: 105, color: 'green' },   // Safe range
                 { min: 105, max: 130, color: 'yellow' },  // Warning high
@@ -125,9 +125,9 @@ export default function Home() {
           <div className={styles.tempContainer}>
               <div className={styles.meterTitle}>Water in Rate </div>
               <CircularMeter 
-                id={2} min={0} max={40} data={data} partitions={10} units={"Gal/min"} size={150}
+                id={2} min={10} max={40} data={data} partitions={10} units={"Gal/min"} size={150}
                 colorRanges={[
-                  { min: 0, max: 15, color: 'red' },      // Critical low
+                  { min: 10, max: 15, color: 'red' },      // Critical low
                   { min: 15, max: 22, color: 'yellow' },  // Warning low
                   { min: 22, max: 27, color: 'green' },   // Safe range
                   { min: 27, max: 35, color: 'yellow' },  // Warning high
@@ -138,9 +138,9 @@ export default function Home() {
           <div className={styles.tempContainer}>
               <div className={styles.meterTitle}>Muck out Rate </div>
               <CircularMeter 
-                id={3} min={0} max={60} data={43.2} partitions={10} units={"Gal/min"} size={150}
+                id={3} min={30} max={60} data={43.2} partitions={10} units={"Gal/min"} size={150}
                 colorRanges={[
-                  { min: 0, max: 35, color: 'red' },      // Critical low
+                  { min: 30, max: 35, color: 'red' },      // Critical low
                   { min: 35, max: 41, color: 'yellow' },  // Warning low
                   { min: 41, max: 48, color: 'green' },   // Safe range
                   { min: 48, max: 55, color: 'yellow' },  // Warning high

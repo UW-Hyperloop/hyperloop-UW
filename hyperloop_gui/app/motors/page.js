@@ -13,10 +13,10 @@ const Motors = () => {
     <div style={{marginLeft: '20%'}}>
         <h1 className={styles.title}>Motors</h1>
         <CircularMeter
-          id={0} min={40} max={80} data={data} partitions={10} units={"°C"} size={150}
+          id={0} min={40} max={100} data={data} partitions={10} units={"°C"} size={150}
           colorRanges={[
             {min: 40, max: 70, color: 'red' },      
-            {min: 70, max: 80, color: 'yellow'},
+            {min: 70, max: 100, color: 'yellow'},
           ]}
         />
 
@@ -24,7 +24,7 @@ const Motors = () => {
           <input
             type="range"
             min={40}
-            max={80}
+            max={200}
             value={data}
             onChange={handleSliderChange}
             className={styles.slider}

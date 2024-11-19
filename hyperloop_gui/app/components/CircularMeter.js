@@ -58,7 +58,7 @@ const CircularMeter = ({ id, min, max, data, units, partitions, size, colorRange
     
     // Generate linear gradients and arcs
     const gradientDefs = colorRanges.map((range, index) => {
-        let begin = 0;
+        let begin = min;
         if(index > 0){
             begin = (range.max - range.min) / 3 + range.min
         }
@@ -78,10 +78,11 @@ const CircularMeter = ({ id, min, max, data, units, partitions, size, colorRange
         const startProportion = (begin - min) / (max - min);
         const midProportion = (mid - begin) / (stop - begin);
         const endProportion = (stop - min) / (max - min);
-    
+        
+        console.log(index + ": " + startProportion + " " + midProportion + " " + endProportion);
         const startAngle = -120 + 240 * startProportion;
         const endAngle = -120 + 240 * endProportion;
-    
+        console.log(index + ": " + startAngle + " " + endAngle);
         const start = polarToCartesian(50, 50, 45, startAngle); // Start of arc
         const end = polarToCartesian(50, 50, 45, endAngle); // End of arc
         //const info = {index: index, start: begin, mid: mid, end: stop, color: range.color, nextColor: nextColor, midProp: midProportion};
@@ -97,7 +98,7 @@ const CircularMeter = ({ id, min, max, data, units, partitions, size, colorRange
     
     // Generate arcs for each color range
     const arcs = colorRanges.map((range, index) => {
-        let begin = 0;
+        let begin = min;
         if(index > 0){
             begin = (range.max - range.min) / 3 + range.min
         }
