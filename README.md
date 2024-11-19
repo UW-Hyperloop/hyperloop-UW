@@ -4,7 +4,7 @@ Feel free to make necessary changes.
 
 washingtonhyperloop.squarespace.com
 
-If this is your first time in this repo, make a branch with your name in format *first_last* to show your contributions. Push changes to your branch and remember to pull regularly to keep up to date with changes from other members. Add your name to member list when you are done with this.
+If this is your first time in this repo, add your name to member list and remember to pull regularly.
 
 **Contributor list:**   
 Daniel Nordgren  
