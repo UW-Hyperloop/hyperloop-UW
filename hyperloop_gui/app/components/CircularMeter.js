@@ -79,10 +79,10 @@ const CircularMeter = ({ id, min, max, data, units, partitions, size, colorRange
         const midProportion = (mid - begin) / (stop - begin);
         const endProportion = (stop - min) / (max - min);
         
-        console.log(index + ": " + startProportion + " " + midProportion + " " + endProportion);
+        //console.log(index + ": " + startProportion + " " + midProportion + " " + endProportion);
         const startAngle = -120 + 240 * startProportion;
         const endAngle = -120 + 240 * endProportion;
-        console.log(index + ": " + startAngle + " " + endAngle);
+        //console.log(index + ": " + startAngle + " " + endAngle);
         const start = polarToCartesian(50, 50, 45, startAngle); // Start of arc
         const end = polarToCartesian(50, 50, 45, endAngle); // End of arc
         //const info = {index: index, start: begin, mid: mid, end: stop, color: range.color, nextColor: nextColor, midProp: midProportion};
