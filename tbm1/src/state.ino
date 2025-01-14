@@ -4,7 +4,7 @@
 const int thermocouplePin = 0; 
 // defines system states 
 enum State { 
-  START, 
+  CONFIG,  
   RUNNING, 
   ERROR, 
   STOP
@@ -18,9 +18,9 @@ State currentState = CONFIG;
 const float maxTemp = 0;  
 
 //ESP32 ADC ref voltage in voltage 
-const float referenceVoltage = 0;
+const float referenceVoltage = 3.3;
 // ref resolution - 32 bits 
-const float adcResolution = 4096;  
+const float adcResolution = 65536;  
 
 void setup() {
   Serial.begin(9600);
@@ -28,45 +28,46 @@ void setup() {
   Serial.println("System initialized - Entering CONFIG state");
   int adcIn = analogRead(thermocouplePin); 
   float calcVoltage = (adcIn * referenceVoltage) / adcResolution;
-  float temp = voltage / 0.005;  // converts to °C (5 mV/°C) - don't trust me on this 
+  float temp = (calcVoltage - 1.25) / 0.005;  // converts to °C (5 mV/°C) 
 
   // start 
-  switch (currentState) { 
-    case CONFIG: 
-      Serial.println("CONFIG: Configuring system"); 
-      // allows time for ppl to read this
-      delay(3000); 
-      currentState = RUNNING; 
-      break; 
+  void loop(){ 
+    switch (currentState) { 
+      case CONFIG: 
+        Serial.println("CONFIG: Configuring system"); // delay(3000) if needed 
+        currentState = RUNNING; 
+        break; 
 
-    case RUNNING:
-      Serial.println("RUNNING - Current temp is %.1f°C\n", temp); 
+      case RUNNING:
+        Serial.println("RUNNING - Current temp is %.1f°C\n", temp); 
 
-      if (temp > maxTemp) {  
-        Serial.println("ERROR: Max Temp exceeded - Overheating detected"); 
-        currentState = ERROR; 
-      }
-      break; 
+        if (temp >= maxTemp) { 
+          Serial.println("ERROR: Max Temp exceeded - Overheating detected"); 
+          currentState = ERROR; 
+        } 
+        break; 
 
-    case ERROR: 
-      Serial.println("Stopping system"); 
-      currentState = STOP; 
-      break; 
+      case ERROR: 
+        Serial.println("Stopping system"); 
+        currentState = STOP; 
+        break; 
 
-    case STOP:
-        // every time the system is stopped, it automatically resets. 
-        Serial.println("System stopped. Resetting system. "); 
+      case STOP:
+          // every time the system is stopped, it automatically resets. 
+          Serial.println("System stopped. Resetting system. "); 
+          currentState = CONFIG; 
+        break;  
+
+      default: 
+        Serial.println("Unknown state"); 
         currentState = CONFIG; 
-      break;  
-
-    default: 
-      // idk if we need this 
-      Serial.println("Unknown state"); 
-      currentState = CONFIG; 
-      break; 
+        break; 
 
 
+    }
   }
+  
+
 
 
 
