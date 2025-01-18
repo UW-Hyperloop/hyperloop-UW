@@ -1,7 +1,6 @@
 # include <Arduino.h>
-// check states function returns the state - shd return a String 
+// option for code once we add more sensors: check states function returns the state - shd return a String 
 
-const int thermocouplePin = 0; 
 // defines system states 
 enum State { 
   CONFIG,  
@@ -17,18 +16,12 @@ State currentState = CONFIG;
 // amplifier module used: AD8495
 const float maxTemp = 0;  
 
-//ESP32 ADC ref voltage in voltage 
-const float referenceVoltage = 3.3;
 // ref resolution - 32 bits 
 const float adcResolution = 65536;  
 
 void setup() {
   Serial.begin(9600);
-  pinMode(thermocouplePin, INPUT); 
   Serial.println("System initialized - Entering CONFIG state");
-  int adcIn = analogRead(thermocouplePin); 
-  float calcVoltage = (adcIn * referenceVoltage) / adcResolution;
-  float temp = (calcVoltage - 1.25) / 0.005;  // converts to °C (5 mV/°C) 
 
   // start 
   void loop(){ 
@@ -41,7 +34,7 @@ void setup() {
       case RUNNING:
         Serial.println("RUNNING - Current temp is %.1f°C\n", temp); 
 
-        if (temp >= maxTemp) { 
+        if (SystemData.motor_temp.value >= maxTemp) { 
           Serial.println("ERROR: Max Temp exceeded - Overheating detected"); 
           currentState = ERROR; 
         } 
@@ -66,6 +59,7 @@ void setup() {
 
     }
   }
+}
   
 
 
