@@ -21,7 +21,7 @@ float get_voltage(int raw_adc) {
 
 float get_temperature(float voltage) {
   // Temperature formula for thermocouple amplifier
-  return (voltage - 1.25) / 0.005;
+  return (voltage - 1.25) / 0.005; // converts to °C (5 mV/°C) 
 }
 
 float get_flowRate(float voltage){
