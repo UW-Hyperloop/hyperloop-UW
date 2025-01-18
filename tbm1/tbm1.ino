@@ -1,6 +1,7 @@
 #include "../headers/tbm.h"
 
 char *state;
+sys_json SystemData;
 
 void setup() {
   // put your setup code here, to run once:
