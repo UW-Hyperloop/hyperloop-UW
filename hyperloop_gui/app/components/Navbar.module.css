@@ -1,0 +1,23 @@
+.navbar {
+    background-color: #333;
+    padding: 10px 20px;
+    color: white;
+}
+.navItems {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: flex-start;
+}
+.navItem {
+    margin-right: 20px;
+}
+.navItem a {
+    color: white;
+    text-decoration: none;
+    font-size: 18px;
+}
+.navItem a:hover {
+    text-decoration: underline;
+}

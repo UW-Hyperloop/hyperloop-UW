@@ -1,0 +1,15 @@
+.container{
+    height: 25px;
+    width: 150px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid black;
+}
+.description{
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

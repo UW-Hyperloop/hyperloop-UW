@@ -1,0 +1,29 @@
+.container {
+    background-color: white;
+    display: flex;
+    justify-content: space-around;
+    height: 500px;
+    width: 100%;
+}
+.motorDetail{
+    width: 18%;
+    height: 80%;
+    background-color: grey;
+    border-radius: 10px;
+
+}
+.title{
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+}
+.circleContainer{
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: auto;
+    padding-right: auto;
+    border: 2px solid blue;
+    height: fit-content;
+    width: fit-content;
+}
+
