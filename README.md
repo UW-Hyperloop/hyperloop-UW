@@ -10,9 +10,3 @@ If this is your first time in this repo, add your name to member list and rememb
 Daniel Nordgren  
 Kaito Yan
 Nahush Shrivatsa
-
-
-
-
-
-
