@@ -1,5 +1,7 @@
 import socket
 
+# Socket is a combination of IP address, port, and protocal
+
 # Step 1: Create a TCP socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -21,12 +23,12 @@ while True:
     print(f"Connection established with {client_address}")
 
     # Step 5: Receive and send data
-    data = client_socket.recv(1024)  # Receive up to 1024 bytes
+    data = client_socket.recv(1024)  # Receive data upto 1024 bytes from the client
     print(f"Received: {data.decode()}")
 
     # Send a response
     response = "Hello from the server!"
-    client_socket.send(response.encode())
+    client_socket.send(response.encode())  # Send data to the client
 
     # Close the client connection
     client_socket.close()
