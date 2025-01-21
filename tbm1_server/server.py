@@ -1,6 +1,8 @@
 import socket
 
 # Socket is a combination of IP address, port, and protocal
+  # Server Socket is for listening to incoming connections from clients like a reception desk to handle connection requests
+  # Client Socket is for handling with a specific client such as sending or receiving data to/from a client
 
 # Step 1: Create a TCP socket
 server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
