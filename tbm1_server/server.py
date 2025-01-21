@@ -17,7 +17,7 @@ print(f"Server is listening on {host}:{port}...")
 
 while True:
     # Step 4: Accept a connection from a client
-    client_socket, client_address = server_socket.accept()
+    client_socket, client_address = server_socket.accept()   #Processing a client one by one
     print(f"Connection established with {client_address}")
 
     # Step 5: Receive and send data
