@@ -26,11 +26,12 @@ while True:
 
     # Step 5: Receive and send data
     data = client_socket.recv(1024)  # Receive data upto 1024 bytes from the client
-    print(f"Received: {data.decode()}")
+    print(f"Received: {data.decode()}") # Decode is for converting bytes back to string
 
     # Send a response
     response = "Hello from the server!"
     client_socket.send(response.encode())  # Send data to the client
+                                           # Encode is for converting string to bytes
 
     # Close the client connection
     client_socket.close()
