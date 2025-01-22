@@ -56,10 +56,22 @@ while True:
     
     #Sending Data to Client from Server
     data = {
-        "state": "START",
-        "motorturn": {"active": True, "vul": 35},
-        "timestamp": 757827927
-    }
+      “team”: <string-formatted team name>,
+      “timestamp”: <UNIX timestamp>,
+      “mining”: <boolean mining flag>,
+      “chainage”: <float-formatted chainage in m>,
+      “easting”: <float-formatted easting in m>,
+      “northing”: <float-formatted northing in m>,
+      “elevation”: <float-formatted elevation in m>,
+      “roll”: <float-formatted roll in radians>,
+      “pitch”: <float-formatted pitch in radians>,
+      “heading”: <float-formatted heading in
+      radians>,
+      “extra”: {
+      “optionalSensor”: <data>,
+      “otherOptionalSensor”: <data>
+        }
+      }
     json_data = json.dumps(data)  # Convert dictionary to JSON string
     
     start_byte = b'\x02'  # Start byte, standing for "Start of Text" in ASCII Table
