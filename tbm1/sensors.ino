@@ -1,10 +1,7 @@
-// Thermocoupler
-#define TC_PIN 34       // Pin for thermocouple input
+#include "tbm.h"
 
 
 
-// Water flow meter
-#define FLOW_SENSOR_PIN 35   // ADC pin connected to the shunt resistor
 #define SHUNT_RESISTOR 150.0 // Resistor value in ohms
 
 #define AREF 3.3             // ADC reference voltage for ESP32
@@ -12,7 +9,8 @@
 
 void setup() {
   Serial.begin(9600);
-  pinMode(TC_PIN, INPUT); // Set the thermocouple pin as input
+  pinMode(MOTOR_TEMP_PIN, INPUT); // Set the thermocouple pin as input
+  pinMode(FLOW_IN_PIN, INPUT); // Set the thermocouple pin as input
 }
 
 float get_voltage(int raw_adc) {
@@ -36,17 +34,19 @@ float get_flowRate(float voltage){
 void loop() {
 
   // Thermocoupler readings
-  int thermo_reading = analogRead(TC_PIN);
+  int thermo_reading = analogRead(MOTOR_TEMP_PIN);
   float thermo_voltage = get_voltage(thermo_reading);
   float temperature = get_temperature(thermo_voltage);
+  SystemData.motor_temp.value = temperature;
 
   Serial.print("Temperature = ");
   Serial.print(temperature);
   Serial.println(" C");
 
-  int flow_reading = analogRead(FLOW_SENSOR_PIN);
+  int flow_reading = analogRead(FLOW_IN_PIN);
   float flow_voltage = get_voltage(flow_reading);
   float flow_rate = get_flowRate(flow_voltage);
+  SystemData.flow_in.value = flow_rate;
 
   Serial.print("Flow Rate = ");
   Serial.print(flow_rate);
