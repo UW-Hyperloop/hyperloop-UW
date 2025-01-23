@@ -1,6 +1,6 @@
 #include "../headers/tbm.h"
 # include <Arduino.h>
-
+# include "state.ino"
 char *state;
 sys_json SystemData;
 
@@ -11,8 +11,7 @@ enum State {
   STOP
 }; 
 
-// "currentState" is used of state definition throughout file 
-// idfk what "state" is used for 
+//sets current state to config 
 State currentState = CONFIG; 
 const float maxTemp = 0;  
 const float adcResolution = 65536;  // 32-bit resolution 
@@ -40,40 +39,12 @@ void setup() {
 
   TestFunction();
   state = START;
-  Serial.println("System initialized - Entering CONFIG state");
+
+  // start adding stuff from here 
+  state_setup(); 
 }
   // start 
 void loop(){ 
-  switch (currentState) { 
-    case CONFIG: 
-      Serial.println("CONFIG: Configuring system"); // delay(3000) if needed 
-      currentState = RUNNING; 
-      break; 
+  state_loop(); 
 
-    case RUNNING:
-      Serial.println("RUNNING - Current temp is %.1f°C\n", SystemData.motor_temp.value); 
-      if (SystemData.motor_temp.value >= maxTemp || SystemData.estop_button.value == 1) { 
-        Serial.println("ERROR: Max Temp exceeded - Overheating detected"); 
-        currentState = ERROR; 
-      }
-      // else if - condition for other sensors : flow meter, bentonite sensor   
-      break; 
-
-    case ERROR: 
-      Serial.println("Stopping system"); 
-      currentState = STOP; 
-      break; 
-
-    case STOP:
-        // every time the system is stopped, it automatically resets. 
-        Serial.println("System stopped. Resetting system. "); 
-        currentState = CONFIG; 
-      break;  
-
-    default: 
-      Serial.println("Unknown state"); 
-      currentState = CONFIG; 
-      break; 
-
-  }
 }
