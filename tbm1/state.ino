@@ -1,3 +1,4 @@
+
 # include <Arduino.h>
 // option for code once we add more sensors: check states function returns the state - shd return a String 
 
@@ -33,11 +34,11 @@ void setup() {
 
       case RUNNING:
         Serial.println("RUNNING - Current temp is %.1f°C\n", temp); 
-
-        if (SystemData.motor_temp.value >= maxTemp) { 
+        if (SystemData.motor_temp.value >= maxTemp || SystemData.estop_button.value == 1) { 
           Serial.println("ERROR: Max Temp exceeded - Overheating detected"); 
           currentState = ERROR; 
-        } 
+        }
+        // else if - condition for other sensors : flow meter, bentonite sensor   
         break; 
 
       case ERROR: 
@@ -60,9 +61,3 @@ void setup() {
     }
   }
 }
-  
-
-
-
-
-
