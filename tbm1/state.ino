@@ -10,7 +10,6 @@ enum State {
 }; 
 
 //sets current state to config 
-// initaliser expected before currentState 
 State currentState = CONFIG; 
 
 // temp threshold 
@@ -20,12 +19,12 @@ const float maxTemp = 0;
 // ref resolution - 32 bits 
 const float adcResolution = 65536;  
 
-void setup() {
+void state_setup() {
   Serial.begin(9600);
   Serial.println("System initialized - Entering CONFIG state");
 }
   // start 
-void loop(){ 
+void state_loop(){ 
   switch (currentState) { 
     case CONFIG: 
       Serial.println("CONFIG: Configuring system"); // delay(3000) if needed 
@@ -59,6 +58,9 @@ void loop(){
 
   }
 }
+
+  
+
 
   
 
