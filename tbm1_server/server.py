@@ -43,61 +43,36 @@ print(f"Server is listening on {host}:{port}...")
 
 ###############################################
 
-## Receiving and Sending Structured Data (Using Jason data format) between Server and Client
 while True:
-  try:
-    client_socket, client_address = server_socket.accept()
-    print(f"Connection established with {client_address}")
-  except Exception as e:
-      print(f"Error accepting connection: {e}")
-      return  # Exit early if no connection is established
+    try:
+        client_socket, client_address = server_socket.accept()
+        print(f"Connection established with {client_address}")
+    except Exception as e:
+        print(f"Error accepting connection: {e}")
+        break  # Exit early if no connection is established
 
-  try: 
-    
-    #Sending Data to Client from Server
-    data = {
-      “team”: <string-formatted team name>,
-      “timestamp”: <UNIX timestamp>,
-      “mining”: <boolean mining flag>,
-      “chainage”: <float-formatted chainage in m>,
-      “easting”: <float-formatted easting in m>,
-      “northing”: <float-formatted northing in m>,
-      “elevation”: <float-formatted elevation in m>,
-      “roll”: <float-formatted roll in radians>,
-      “pitch”: <float-formatted pitch in radians>,
-      “heading”: <float-formatted heading in
-      radians>,
-      “extra”: {
-      “optionalSensor”: <data>,
-      “otherOptionalSensor”: <data>
-        }
-      }
-    json_data = json.dumps(data)  # Convert dictionary to JSON string
-    
-    start_byte = b'\x02'  # Start byte, standing for "Start of Text" in ASCII Table
-    end_byte = b'\x03'    # End byte, standing for "End of Text" in ASCII Table
-    
-    # Construct the message in the structured way
-    message = start_byte + json_data.encode() + end_byte
-    client_socket.send(message)
+    try:
+        # Construct the message in the structured way
+        client_socket.send("Hello")
 
-    
-    #Receiving Data from Client
-    received_data = client_socket.recv(1024)
-    if received_data.startswith(b'\x02') and received_data.endswith(b'\x03'):
-        # Strip start and end bytes
-        json_data = received_data[1:-1].decode()  # Remove start/end bytes
-        received_refined_data = json.loads(json_data)  # Parse JSON
-        print(received_refined_data)
-    else:
-        print("Invalid data format (missing start/end bytes).")
-      
-  except json.JSONDecodeError as e:
-    print(f"Error decoding JSON: {e}")
-  except Exception as e:
-      print(f"Error receiving or processing data: {e}")
-  finally:
-      client_socket.close()
-      server_socket.close()
+        # Receiving Data from Client
+        received_data = client_socket.recv(1024)
+        if received_data.startswith(b'\x02') and received_data.endswith(b'\x03'):
+            print("Json Format")
+            # Strip start and end bytes
+            json_data = received_data[1:-1].decode()  # Remove start/end bytes
+            received_refined_data = json.loads(json_data)  # Parse JSON
+            print(received_refined_data)
+        else:
+            print("Not Jason Format")
+            received_data = client_socket.recv(1024)
+            print(f"Received: {received_data.decode()}")
+
+    except Exception as e:
+        print(f"Error receiving or processing data: {e}")
+
+    finally:
+        client_socket.close()
+        server_socket.close()
         
   
