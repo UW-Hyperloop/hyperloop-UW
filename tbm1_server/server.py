@@ -60,7 +60,7 @@ while True:
         if received_data.startswith(b'\x02') and received_data.endswith(b'\x03'):
             print("Json Format")
             # Strip start and end bytes
-            json_data = received_data[1:-1].decode()  # Remove start/end bytes
+            json_data = received_data[2:-2].decode()  # Remove start/end bytes
             received_refined_data = json.loads(json_data)  # Parse JSON
             print(received_refined_data)
         else:
