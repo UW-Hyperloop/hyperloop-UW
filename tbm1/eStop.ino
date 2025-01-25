@@ -1,6 +1,6 @@
 #define EMERGENCY_STOP_PIN 13 // GPIO pin connected to the NC contact
 
-void setup() {
+void eStop_setup() {
     pinMode(EMERGENCY_STOP_PIN, INPUT_PULLUP);
     Serial.begin(9600);
 }
@@ -8,7 +8,7 @@ void setup() {
 // Will use NC option so the in case of wire malfunction a lack of current
 // will indicate E-stop
 // Use of Internal pullup resistor will also lead to floating pins activating the E stop
-void loop() {
+void eStop_loop() {
     // Read the state of the emergency stop button
     int buttonState = digitalRead(EMERGENCY_STOP_PIN);
     
