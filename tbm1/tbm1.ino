@@ -43,9 +43,11 @@ void setup() {
 
   // start adding stuff from here 
   state_setup(); 
+  eStop_setup(); 
 }
   // start 
 void loop(){ 
   state_loop(); 
+  eStop_loop(); 
 
 }
