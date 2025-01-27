@@ -3,6 +3,7 @@
 #include "state.ino"
 #include <tbm.h>
 #include <sensors.ino>
+#include <jsonSerialization.ino>
 char *state;
 sys_json SystemData;
 
@@ -47,7 +48,9 @@ void setup() {
   eStop_setup(); 
   sensorPinSetup();
   sensorDataReadLoop();
-  
+  mainJsonSetup();
+  JSON_loop();
+
 }
   // start 
 void loop(){ 
