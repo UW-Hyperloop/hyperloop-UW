@@ -11,3 +11,4 @@ Daniel Nordgen
 Kaito Yan  
 Nahush Shrivatsa  
 Alexandra Yankovskaya
+Hemil K. Patel
