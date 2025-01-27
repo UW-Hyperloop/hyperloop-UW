@@ -10,7 +10,7 @@
 #define AREF 3.3             // ADC reference voltage for ESP32
 #define ADC_RESOLUTION 4095  // 12-bit ADC resolution
 
-void setup() {
+void sensorPinSetup() {
   Serial.begin(9600);
   pinMode(TC_PIN, INPUT); // Set the thermocouple pin as input
 }
@@ -33,7 +33,7 @@ float get_flowRate(float voltage){
   return 3.125 * (current_mA - 4);
 }
 
-void loop() {
+void sensorDataReadLoop() {
 
   // Thermocoupler readings
   int thermo_reading = analogRead(TC_PIN);

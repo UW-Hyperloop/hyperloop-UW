@@ -2,6 +2,7 @@
 #include <Arduino.h>
 #include "state.ino"
 #include <tbm.h>
+#include <sensors.ino>
 char *state;
 sys_json SystemData;
 
@@ -44,6 +45,9 @@ void setup() {
   // start adding stuff from here 
   state_setup(); 
   eStop_setup(); 
+  sensorPinSetup();
+  sensorDataReadLoop();
+  
 }
   // start 
 void loop(){ 
