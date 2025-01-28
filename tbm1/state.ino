@@ -31,8 +31,7 @@ void state_loop(){
       Serial.println("CONFIG: Configuring system"); 
       if (!checkStopped()) { 
         currentState = ERROR; 
-      }
-      while (incomingMessage != TBM_START) { 
+      } else if (incomingMessage != TBM_START) { 
         currentState = CONFIG; 
       } else { 
         currentState = RUNNING; 
@@ -52,6 +51,7 @@ void state_loop(){
       digitalWrite(MOTORCTRL_PIN, LOW);     // stops motor
       digitalWrite(PUMPCTRL_PIN, LOW);      // stops water pump 
       digitalWrite(BENTCTRL_PIN, LOW);      // stops bentonite pump 
+      // send message to server 
       currentState = STOP; 
       break; 
 
@@ -61,10 +61,11 @@ void state_loop(){
           currentState = ERROR; 
         } else { 
           Serial.println("System stopped. Resetting system."); 
-          while (incomingMessage != TBM_START) { 
+          if (incomingMessage != TBM_START) { 
             currentState = STOP; 
-          }
-          currentState = CONFIG; 
+          } else { 
+            currentState = CONFIG; 
+          }  
         }
       break;  
 
