@@ -38,7 +38,6 @@ void setup() {
 
   // TODO set up uart communication to ethernet module
   TestFunction();
-  state = START;
 
   // start adding stuff from here 
   state_setup(); 
