@@ -28,7 +28,8 @@ void state_setup() {
 void state_loop(){ 
   switch (currentState) { 
     case CONFIG: 
-      Serial.println("CONFIG: Configuring system"); // delay(3000) if needed 
+      Serial.println("CONFIG: Configuring system"); 
+      // wait until boolean is false - flag - wait for esp32
       currentState = RUNNING; 
       break; 
 
@@ -50,6 +51,8 @@ void state_loop(){
         // every time the system is stopped, it automatically resets. 
         Serial.println("System stopped. Resetting system. "); 
         currentState = CONFIG; 
+      // editing value for bentonite pump and water sensor 
+      // boolean is true 
       break;  
 
     default: 
