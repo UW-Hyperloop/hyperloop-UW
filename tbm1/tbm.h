@@ -22,6 +22,17 @@
 #define RUNNING "running"
 #define ERROR "error"
 
+typedef enum { 
+    NO_MESSAGE = 0, 
+    TBM_INIT = 1,  
+    TBM_START = 2,  
+    TBM_STOP = 3,  
+    TBM_ERROR = 4,  
+    TBM_DATA = 5,  
+} MessageID; 
+
+MessageID incomingMessage = NO_MESSAGE; 
+    
 struct Sensor {
     bool active;
     int value;   // can be an array if we need multiple values.
