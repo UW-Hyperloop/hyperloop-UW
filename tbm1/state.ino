@@ -30,7 +30,7 @@ void state_loop(){
     case CONFIG: 
       Serial.println("CONFIG: Configuring system"); 
 
-      if (checkStopped()) { 
+      if (checkStopped() && incomingMessage == TBM_START) { 
         // TO DO: if we recieve TBMSTART command from server, move on, if not, currentState = RUNNING; 
         currentState = RUNNING; 
       } else { 
