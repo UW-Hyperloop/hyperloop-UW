@@ -20,7 +20,6 @@ const float maxTemp = 0;
 const float adcResolution = 65536;  // 32-bit resolution 
 
 void setup() {
-  // put your setup code here, to run once:
   // output to transistors for supplying power
   pinMode(ESTOPCTRL_PIN, OUTPUT);
   pinMode(MOTORCTRL_PIN, OUTPUT);
@@ -39,7 +38,6 @@ void setup() {
   pinMode(FLOW_OUT_PIN, INPUT);
 
   // TODO set up uart communication to ethernet module
-
   TestFunction();
   state = START;
 
