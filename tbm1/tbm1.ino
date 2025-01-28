@@ -47,14 +47,14 @@ void setup() {
   state_setup(); 
   eStop_setup(); 
   sensorPinSetup();
-  sensorDataReadLoop();
   mainJsonSetup();
-  JSON_loop();
+  
 
 }
   // start 
 void loop(){ 
   state_loop(); 
   eStop_loop(); 
-
+  JSON_loop();
+  sensorDataReadLoop();
 }
