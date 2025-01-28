@@ -1,8 +1,6 @@
 // Thermocoupler
 #define TC_PIN 34       // Pin for thermocouple input
 
-
-
 // Water flow meter
 #define FLOW_SENSOR_PIN 35   // ADC pin connected to the shunt resistor
 #define SHUNT_RESISTOR 150.0 // Resistor value in ohms
