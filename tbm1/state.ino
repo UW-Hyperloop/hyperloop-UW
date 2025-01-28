@@ -25,12 +25,17 @@ void state_setup() {
   Serial.println("System initialized - Entering CONFIG state");
 }
   // start 
-void state_loop(){ 
+void state_loop(){
   switch (currentState) { 
     case CONFIG: 
       Serial.println("CONFIG: Configuring system"); 
-      // wait until boolean is false - flag - wait for esp32
-      currentState = RUNNING; 
+
+      if (checkStopped()) { 
+        // TO DO: if we recieve TBMSTART command from server, move on, if not, currentState = RUNNING; 
+        currentState = RUNNING; 
+      } else { 
+        currentState = ERROR; 
+      }
       break; 
 
     case RUNNING:
@@ -39,20 +44,25 @@ void state_loop(){
         Serial.println("ERROR: Max Temp exceeded - Overheating detected"); 
         currentState = ERROR; 
       }
-      // else if - condition for other sensors : flow meter, bentonite sensor   
       break; 
 
     case ERROR: 
       Serial.println("Stopping system"); 
+      digitalWrite(MOTORCTRL_PIN, LOW);     // stops motor
+      digitalWrite(PUMPCTRL_PIN, LOW);      // stops water pump 
+      digitalWrite(BENTCTRL_PIN, LOW);      // stops bentonite pump 
       currentState = STOP; 
       break; 
 
     case STOP:
         // every time the system is stopped, it automatically resets. 
-        Serial.println("System stopped. Resetting system. "); 
-        currentState = CONFIG; 
-      // editing value for bentonite pump and water sensor 
-      // boolean is true 
+        if (!checkStopped()) { 
+          currentState = ERROR; 
+        } else { 
+          Serial.println("System stopped. Resetting system. "); 
+          // TO DO: if we recieve TBMSTART command from server, move on, if not, currentState = STOP; 
+          currentState = CONFIG; 
+        }
       break;  
 
     default: 
@@ -62,6 +72,22 @@ void state_loop(){
 
   }
 }
+
+bool checkStopped() { 
+  if (digitalRead(MOTORCTRL_PIN) != LOW) { 
+    Serial.println("Motor not stopped!"); 
+    return false; 
+  } else if (digitalRead(PUMPCTRL_PIN) != LOW) { 
+    Serial.println("Water pump not off!"); 
+    return false; 
+  } else if (digitalRead(BENTCTRL_PIN) != LOW) { 
+    Serial.println("Bentonite pump not off! "); 
+    return false; 
+  } else { 
+    return true; 
+  }
+}
+
 
   
 
