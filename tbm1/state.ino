@@ -29,19 +29,20 @@ void state_loop(){
   switch (currentState) { 
     case CONFIG: 
       Serial.println("CONFIG: Configuring system"); 
-
-      if (checkStopped() && incomingMessage == TBM_START) { 
-        // TO DO: if we recieve TBMSTART command from server, move on, if not, currentState = RUNNING; 
-        currentState = RUNNING; 
-      } else { 
+      if (!checkStopped()) { 
         currentState = ERROR; 
+      }
+      while (incomingMessage != TBM_START) { 
+        currentState = CONFIG; 
+      } else { 
+        currentState = RUNNING; 
       }
       break; 
 
     case RUNNING:
       Serial.println("RUNNING - Current temp is %.1f°C\n", SystemData.motor_temp.value); 
-      if (SystemData.motor_temp.value >= maxTemp || SystemData.estop_button.value == 1) { 
-        Serial.println("ERROR: Max Temp exceeded - Overheating detected"); 
+      if (SystemData.motor_temp.value >= maxTemp || SystemData.estop_button.value == 1 || incomingMessage == TBM_STOP) { 
+        Serial.println("ERROR: Stopping TBM"); 
         currentState = ERROR; 
       }
       break; 
@@ -59,8 +60,10 @@ void state_loop(){
         if (!checkStopped()) { 
           currentState = ERROR; 
         } else { 
-          Serial.println("System stopped. Resetting system. "); 
-          // TO DO: if we recieve TBMSTART command from server, move on, if not, currentState = STOP; 
+          Serial.println("System stopped. Resetting system."); 
+          while (incomingMessage != TBM_START) { 
+            currentState = STOP; 
+          }
           currentState = CONFIG; 
         }
       break;  
