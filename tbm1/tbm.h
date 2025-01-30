@@ -35,6 +35,7 @@ typedef enum {
 } MessageID; 
 
 MessageID incomingMessage = NO_MESSAGE; 
+MessageID outgoingMessage = NO_MESSAGE; 
     
 struct Sensor {
     bool active;
