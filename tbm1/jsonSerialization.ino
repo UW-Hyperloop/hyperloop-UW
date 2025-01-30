@@ -6,13 +6,13 @@ void sysData();
 
 
 
-void setup() {
-  setupPins();
+void mainJsonSetup() {
+  jsonPinSetup();
   sysData();
 }
 
 
-void setupPins(){
+void jsonPinSetup(){
   Serial.begin(115200);
 
   pinMode(RX, OUTPUT);
@@ -236,7 +236,7 @@ void handleInputs(){
 
 
 
-void loop() {
+void JSON_loop() {
   // put your main code here, to run repeatedly:
   void readSensor;
   void updateSystemState;

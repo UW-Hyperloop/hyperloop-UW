@@ -1,10 +1,29 @@
+<<<<<<< HEAD
 #include "tbm.h"
 
+=======
+#include <Arduino.h>
+#include "state.ino"
+#include "tbm.h"
+#include "sensors.ino"
+#include "jsonSerialization.ino"
+>>>>>>> origin/main
 char *state;
 sys_json SystemData;
 
+enum State { 
+  CONFIG,  
+  RUNNING, 
+  ERROR, 
+  STOP
+}; 
+
+//sets current state to config 
+State currentState = CONFIG; 
+const float maxTemp = 0;  
+const float adcResolution = 65536;  // 32-bit resolution 
+
 void setup() {
-  // put your setup code here, to run once:
   // output to transistors for supplying power
   pinMode(ESTOPCTRL_PIN, OUTPUT);
   pinMode(MOTORCTRL_PIN, OUTPUT);
@@ -22,13 +41,19 @@ void setup() {
   pinMode(FLOW_IN_PIN, INPUT);
   pinMode(FLOW_OUT_PIN, INPUT);
 
-  // TODO set up uart communication to ethernet module
 
-  TestFunction();
-  state = START;
+  // start adding stuff from here 
+  state_setup(); 
+  eStop_setup(); 
+  sensorPinSetup();
+  mainJsonSetup();
+  
+
 }
-
-void loop() {
-  // put your main code here, to run repeatedly:
-
+  // start 
+void loop(){ 
+  state_loop(); 
+  eStop_loop(); 
+  JSON_loop();
+  sensorDataReadLoop();
 }
