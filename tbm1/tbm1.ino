@@ -1,13 +1,8 @@
-<<<<<<< HEAD
-#include "tbm.h"
-
-=======
 #include <Arduino.h>
 #include "state.ino"
 #include "tbm.h"
 #include "sensors.ino"
 #include "jsonSerialization.ino"
->>>>>>> origin/main
 char *state;
 sys_json SystemData;
 
