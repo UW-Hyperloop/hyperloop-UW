@@ -53,12 +53,11 @@ void state_loop(){
       break; 
 
     case ERROR: 
-      //Send TMB_ERROR
+      
       Serial.println("Stopping system"); 
       digitalWrite(MOTORCTRL_PIN, LOW);     // stops motor
       digitalWrite(PUMPCTRL_PIN, LOW);      // stops water pump 
       digitalWrite(BENTCTRL_PIN, LOW);      // stops bentonite pump 
-      // send message to server 
       currentState = STOP; 
       break; 
 
