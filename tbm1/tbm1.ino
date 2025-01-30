@@ -1,8 +1,8 @@
 #include <Arduino.h>
-#include <state.ino>
-#include <tbm.h>
-#include <sensors.ino>
-#include <jsonSerialization.ino>
+#include "state.ino"
+#include "tbm.h"
+#include "sensors.ino"
+#include "jsonSerialization.ino"
 char *state;
 sys_json SystemData;
 
@@ -36,8 +36,6 @@ void setup() {
   pinMode(FLOW_IN_PIN, INPUT);
   pinMode(FLOW_OUT_PIN, INPUT);
 
-  // TODO set up uart communication to ethernet module
-  TestFunction();
 
   // start adding stuff from here 
   state_setup(); 

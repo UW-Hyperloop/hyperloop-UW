@@ -1,3 +1,6 @@
+#ifndef TBM_H
+#define TBM_H
+
 #define RX 16
 #define TX 17
 #define ESTOPCTRL_PIN 18
@@ -17,21 +20,21 @@
 #define CONFIG_API "/config"
 
 
-#define STOP "stop"
-#define START "start"
-#define RUNNING "running"
-#define ERROR "error"
+const char* STOP = "stop";
+const char* START = "start";
+const char* RUNNING = "running";
+const char* ERROR = "error";
 
 typedef enum { 
     NO_MESSAGE = 0, 
-    TBM_INIT = 1,  
+    MESSAGE_TBM_INIT = 1,  
     TBM_START = 2,  
     TBM_STOP = 3,  
     TBM_ERROR = 4,  
     TBM_DATA = 5,  
 } MessageID; 
 
-MessageID incomingMessage = NO_MESSAGE; 
+//MessageID incomingMessage = NO_MESSAGE; 
     
 struct Sensor {
     bool active;
@@ -51,3 +54,4 @@ struct sys_json {
     Sensor estop_button; // val should be 1 if e-stop is pressed
     signed int global_time;
 };
+#endif // TBM_H
