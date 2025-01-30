@@ -25,6 +25,7 @@ void state_setup() {
 }
 
 void state_loop(){
+  // TBM_DATA 
   switch (currentState) { 
     case CONFIG: 
       Serial.println("CONFIG: Configuring system"); 
@@ -41,8 +42,12 @@ void state_loop(){
 
     case RUNNING:
       Serial.println("RUNNING - Current temp is %.1f°C\n", SystemData.motor_temp.value); 
-      if (SystemData.motor_temp.value >= maxTemp || SystemData.estop_button.value == 1 || incomingMessage == TBM_STOP) { 
+      if (SystemData.motor_temp.value >= maxTemp || SystemData.estop_button.value == 1 ) { 
         Serial.println("ERROR: Stopping TBM"); 
+        currentState = ERROR; 
+        // TBM_ERROR
+      } else if (incomingMessage == TBM_STOP) {
+        Serial.println("TBM_STOP received - Stopping TBM"); 
         currentState = ERROR; 
       }
       break; 
