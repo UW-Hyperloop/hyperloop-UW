@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include <tbm.h>
-// option for code once we add more sensors: check states function returns the state - shd return a String 
 
 // defines system states 
 enum State { 
@@ -24,13 +23,15 @@ void state_setup() {
   Serial.begin(9600);
   Serial.println("System initialized - Entering CONFIG state");
 }
-  // start 
+
 void state_loop(){
   switch (currentState) { 
     case CONFIG: 
       Serial.println("CONFIG: Configuring system"); 
+      // Send: TBM_CONFIG
       if (!checkStopped()) { 
         currentState = ERROR; 
+        // Send: TBM_ERROR
       } else if (incomingMessage != TBM_START) { 
         currentState = CONFIG; 
       } else { 
@@ -47,6 +48,7 @@ void state_loop(){
       break; 
 
     case ERROR: 
+      //Send TMB_ERROR
       Serial.println("Stopping system"); 
       digitalWrite(MOTORCTRL_PIN, LOW);     // stops motor
       digitalWrite(PUMPCTRL_PIN, LOW);      // stops water pump 
