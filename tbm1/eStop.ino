@@ -9,14 +9,16 @@ void eStop_setup() {
 
 
 void eStop_loop() {
-  int buttonState = digitalRead(ESTOP_PIN);
-  if (buttonState == HIGH) {
-
-    Serial.println("Emergency Stop Activated!");
-
-  } else {
-    // Normal operation
-    // ...
-  }
-  // Add any additional E-stop logic you need
+    // Read the state of the emergency stop button
+    int buttonState = digitalRead(ESTOPCTRL_PIN);
+    
+    if (buttonState == HIGH) {
+        Serial.println("Emergency Stop Activated!");
+        // TODO: add stop logic
+        SystemData.estop_button.value = 1;
+    } else {
+        Serial.println("System Running Normally");
+    }
+    
+    delay(100); // Small delay for stability
 }
