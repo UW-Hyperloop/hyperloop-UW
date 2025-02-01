@@ -19,11 +19,10 @@ void setup() {
   pinMode(ESTOPSENSE_PIN, INPUT);
   pinMode(MOTOR_TEMP_PIN, INPUT);
   pinMode(PUMP_TEMP_PIN, INPUT);
-  pinMode(FLOW_IN_PIN,    INPUT);
-  pinMode(FLOW_OUT_PIN,   INPUT);
+  //pinMode(FLOW_IN_PIN,    INPUT);
+  //pinMode(FLOW_OUT_PIN,   INPUT);
 
- 
-  eStop_setup();
+
 
  
   initSystemData();

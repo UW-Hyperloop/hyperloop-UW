@@ -11,7 +11,7 @@
 
 #define AREF 3.3             // ADC reference voltage for ESP32
 #define ADC_RESOLUTION 4095  // 12-bit ADC resolution
-
+// 
 /*
 #define DO   18 
 #define CS   19
@@ -24,7 +24,7 @@ Adafruit_MAX31855 thermocouple(CLK, CS, DO); //initialize thermocouple object
 void sensorPinSetup() {
   Serial.begin(9600);
   // no longer reading from pin for temperature
-  pinMode(FLOW_IN_PIN, INPUT); // Set the thermocouple pin as input
+  //pinMode(FLOW_IN_PIN, INPUT); // Set the thermocouple pin as input
 }
 float get_voltage(int raw_adc) {
   return (raw_adc * AREF) / ADC_RESOLUTION;;  
@@ -133,7 +133,7 @@ float get_flowRate(float voltage){
 // ---------------------------------------------------------
 void readSensors() {
   // 1. Motor temperature
-  double motorTempC      = get_temperature(volt_motor);
+  double motorTempC      = get_temperature();
 
   systemData.motor_temp.value     = (int)motorTempC;
   systemData.motor_temp.timestamp = millis();
@@ -141,24 +141,24 @@ void readSensors() {
   // 2. Pump temperature => "flow_temp" in your struct
   int   raw_pump        = analogRead(PUMP_TEMP_PIN);
   float volt_pump       = get_voltage(raw_pump);
-  float pumpTempC       = get_temperature(volt_pump);
+  float pumpTempC       = get_temperature();
 
   systemData.flow_temp.value      = (int)pumpTempC;
   systemData.flow_temp.timestamp  = millis();
 
   // 3. Flow in
-  int   raw_flowIn      = analogRead(FLOW_IN_PIN);
-  float volt_flowIn     = get_voltage(raw_flowIn);
-  float flowRateIn      = get_flowRate(volt_flowIn);
-
+  //int   raw_flowIn      = analogRead(FLOW_IN_PIN);
+  //float volt_flowIn     = get_voltage(raw_flowIn);
+  //float flowRateIn      = get_flowRate(volt_flowIn);
+  float flowRateIn = 10;
   systemData.flow_in.value        = (int)flowRateIn;
   systemData.flow_in.timestamp    = millis();
 
   // 4. Flow out
-  int   raw_flowOut     = analogRead(FLOW_OUT_PIN);
-  float volt_flowOut    = get_voltage(raw_flowOut);
-  float flowRateOut     = get_flowRate(volt_flowOut);
-
+  //int   raw_flowOut     = analogRead(FLOW_OUT_PIN);
+  //float volt_flowOut    = get_voltage(raw_flowOut);
+  //float flowRateOut     = get_flowRate(volt_flowOut);
+  float flowRateOut = 10;
   systemData.flow_out.value       = (int)flowRateOut;
   systemData.flow_out.timestamp   = millis();
 

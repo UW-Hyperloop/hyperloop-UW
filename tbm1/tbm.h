@@ -6,10 +6,9 @@
 // -------------------------------------------------------------------
 //    PIN DEFINITIONS 
 // -------------------------------------------------------------------
-#define ESTOP_PIN        13    // eStop button input pin
 
-#define ESTOPCTRL_PIN    18
-#define MOTORCTRL_PIN    19
+#define ESTOPCTRL_PIN    12
+#define MOTORCTRL_PIN    13
 #define PUMPCTRL_PIN     21
 #define BENTCTRL_PIN     25
 
@@ -18,8 +17,12 @@
 #define ESTOPSENSE_PIN 33
 #define MOTOR_TEMP_PIN 34
 #define PUMP_TEMP_PIN 35
-#define FLOW_IN_PIN 12
-#define FLOW_OUT_PIN 13
+//#define FLOW_IN_PIN 12
+//#define FLOW_OUT_PIN 13
+// SPI for thermocouple
+#define DO   18 
+#define CS   19
+#define CLK  5
 
 #define SENSOR_API "/sensor"
 #define CONFIG_API "/config"
