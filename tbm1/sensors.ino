@@ -1,7 +1,11 @@
+#include <Arduino.h>
 #include "tbm.h"
 #include <SPI.h> //enables communication between ESP32 and MAX31855 amp
 #include "Adafruit_MAX31855.h" // need to install this package, depends on above as well
 
+// ---------------------------------------------------------
+//  Helpers for ADC, temperature, flow, etc.
+// ---------------------------------------------------------
 
 #define SHUNT_RESISTOR 150.0 // Resistor value in ohms
 
@@ -22,7 +26,6 @@ void sensorPinSetup() {
   // no longer reading from pin for temperature
   pinMode(FLOW_IN_PIN, INPUT); // Set the thermocouple pin as input
 }
-
 float get_voltage(int raw_adc) {
   return (raw_adc * AREF) / ADC_RESOLUTION;;  
 }
@@ -125,23 +128,60 @@ float get_flowRate(float voltage){
   return 3.125 * (current_mA - 4);
 }
 
-void sensorDataReadLoop() {
+// ---------------------------------------------------------
+//  Read all sensors -> update systemData fields
+// ---------------------------------------------------------
+void readSensors() {
+  // 1. Motor temperature
 
-  // Thermocoupler type K +  max31855 amplifier temp reading
-  double motorTemp = get_temperature(); 
-  Serial.print("Temperature = ");
-  Serial.print(motorTemp);
-  Serial.println(" C");
-  SystemData.motor_temp.value = motorTemp;
+  double motorTempC      = get_temperature(volt_motor);
 
-  // flowmeter reading (not tested yet)
-  int flowReading = analogRead(FLOW_IN_PIN);
-  float flowVoltage = get_voltage(flowReading);
-  float flowRate = get_flowRate(flowVoltage);
-  SystemData.flow_in.value = flowRate;
+  systemData.motor_temp.value     = (int)motorTempC;
+  systemData.motor_temp.timestamp = millis();
 
-  Serial.print("Flow Rate = ");
-  Serial.print(flowRate);
-  Serial.println("L/min");
-  delay(500);
+  // 2. Pump temperature => "flow_temp" in your struct
+  int   raw_pump        = analogRead(PUMP_TEMP_PIN);
+  float volt_pump       = get_voltage(raw_pump);
+  float pumpTempC       = get_temperature(volt_pump);
+
+  systemData.flow_temp.value      = (int)pumpTempC;
+  systemData.flow_temp.timestamp  = millis();
+
+  // 3. Flow in
+  int   raw_flowIn      = analogRead(FLOW_IN_PIN);
+  float volt_flowIn     = get_voltage(raw_flowIn);
+  float flowRateIn      = get_flowRate(volt_flowIn);
+
+  systemData.flow_in.value        = (int)flowRateIn;
+  systemData.flow_in.timestamp    = millis();
+
+  // 4. Flow out
+  int   raw_flowOut     = analogRead(FLOW_OUT_PIN);
+  float volt_flowOut    = get_voltage(raw_flowOut);
+  float flowRateOut     = get_flowRate(volt_flowOut);
+
+  systemData.flow_out.value       = (int)flowRateOut;
+  systemData.flow_out.timestamp   = millis();
+
+  // 5. Motor power sense (digital)
+  int motorPow = digitalRead(MOTORSENSE_PIN);
+  systemData.motor_power.value    = motorPow;
+  systemData.motor_power.timestamp= millis();
+
+  // 6. Pump power sense (digital)
+  int pumpPow = digitalRead(PUMPSENSE_PIN);
+  systemData.pump_power.value     = pumpPow;
+  systemData.pump_power.timestamp = millis();
+
+  // 7. Bentonite power sense (if no pin, set 0)
+  systemData.bentonite_power.value     = 0;
+  systemData.bentonite_power.timestamp = millis();
+
+  // 8. E-stop sense
+  int eStopVal = digitalRead(ESTOPSENSE_PIN);
+  systemData.estop_button.value        = eStopVal;
+  systemData.estop_button.timestamp    = millis();
+
+  // 9. Update global_time
+  systemData.global_time = millis();
 }
