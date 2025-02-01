@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-#include "tbm.h"
-=======
 #include <Arduino.h>
 #include "tbm.h"
 
->>>>>>> origin/main
 
 void eStop_setup() {
  
@@ -13,7 +9,6 @@ void eStop_setup() {
 
 
 void eStop_loop() {
-<<<<<<< HEAD
     // Read the state of the emergency stop button
     int buttonState = digitalRead(ESTOPCTRL_PIN);
     
@@ -26,16 +21,4 @@ void eStop_loop() {
     }
     
     delay(100); // Small delay for stability
-=======
-  int buttonState = digitalRead(ESTOP_PIN);
-  if (buttonState == HIGH) {
-
-    Serial.println("Emergency Stop Activated!");
-
-  } else {
-    // Normal operation
-    // ...
-  }
-  // Add any additional E-stop logic you need
->>>>>>> origin/main
 }

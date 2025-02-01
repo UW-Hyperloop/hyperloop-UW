@@ -133,7 +133,6 @@ float get_flowRate(float voltage){
 // ---------------------------------------------------------
 void readSensors() {
   // 1. Motor temperature
-
   double motorTempC      = get_temperature(volt_motor);
 
   systemData.motor_temp.value     = (int)motorTempC;
