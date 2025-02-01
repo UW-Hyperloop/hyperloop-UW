@@ -1,6 +1,30 @@
+#  ESP
+# Arduino IDE
+# Pull up Repositories
+
 import socket
 import json
+import threading
+import keyboard
 
+###################################
+#Detecting Keystroke to Send Data to ESP or Stop the connection with ESP
+KEY_SIGNAL = False
+CHAR = None
+
+def listen_for_keys():
+    global CHAR
+    global KEY_SIGNAL
+    while True:
+        key = keyboard.read_event()  # Wait for any key press
+        if key.event_type == keyboard.KEY_DOWN:  # Detect key press
+            KEY_SIGNAL = True  # Set flag
+            CHAR = key.name
+###################################
+
+#Thread to respond to keystroke anytime
+t = threading.Thread(target=listen_for_keys, daemon=True)
+t.start()
 
 #TBM Class
 class TBM:
@@ -70,6 +94,13 @@ while True:
 while True:
     try:
         # Construct the message in the structured way.
+        
+        #################################################
+        #Handling Broken Pipe
+        if client_socket.fileno() != -1:  # -1 means socket is closed
+            client_socket.sendall(b"Hello, Client!")
+        #################################################
+        
         word = "HEllo"
         client_socket.send(word.encode())
 
@@ -79,7 +110,13 @@ while True:
         if received_data.startswith(b'\x02') and received_data.endswith(b'\x03'):
             print("Json Format")
             # Strip start and end bytes
-            json_data = received_data[2].decode()  # Remove start/end bytes
+            json_data = ""
+            for data in received_data[2:460]:
+                json_data += chr(data)
+
+#Broken Pipe
+
+            # json_data = chr(received_data[2:460]) # Remove start/end bytes
             received_refined_data = json.loads(json_data)  # Parse JSON
             tbm.TBMupdate(received_refined_data)    #Passing the data to the TBM's function to update TBM
             print(received_refined_data)
@@ -87,10 +124,20 @@ while True:
             print("Not Jason Format")
             print(f"Received: {received_data.decode()}")
 
+        
+        ###################################
+        if KEY_SIGNAL:
+            #Stop Connecting with ESP
+            if CHAR == 's':
+                break
+            if CHAR == 't':
+                client_socket.send("DATA".encode())
+        ###################################
+
     except Exception as e:
         print(f"Error receiving or processing data: {e}")
 
-
+t.join()
 
 # import socket
 #

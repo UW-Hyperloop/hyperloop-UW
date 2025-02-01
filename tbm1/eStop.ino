@@ -1,20 +1,21 @@
-#define EMERGENCY_STOP_PIN 13 // GPIO pin connected to the NC contact
+#include <Arduino.h>
+#include "tbm.h"
+
 
 void eStop_setup() {
-    pinMode(EMERGENCY_STOP_PIN, INPUT_PULLUP);
-    Serial.begin(9600);
+ 
+  pinMode(ESTOP_PIN, INPUT_PULLUP);
 }
 
-// Will use NC option so the in case of wire malfunction a lack of current
-// will indicate E-stop
-// Use of Internal pullup resistor will also lead to floating pins activating the E stop
+
 void eStop_loop() {
     // Read the state of the emergency stop button
-    int buttonState = digitalRead(EMERGENCY_STOP_PIN);
+    int buttonState = digitalRead(ESTOPCTRL_PIN);
     
     if (buttonState == HIGH) {
         Serial.println("Emergency Stop Activated!");
         // TODO: add stop logic
+        SystemData.estop_button.value = 1;
     } else {
         Serial.println("System Running Normally");
     }
