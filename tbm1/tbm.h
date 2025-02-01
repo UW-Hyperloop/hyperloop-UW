@@ -1,58 +1,109 @@
 #ifndef TBM_H
 #define TBM_H
 
-#define RX 16
-#define TX 17
-#define ESTOPCTRL_PIN 18
-#define MOTORCTRL_PIN 19
-#define PUMPCTRL_PIN 21
-#define BENTCTRL_PIN 25
+#include <Arduino.h>
 
-#define MOTORSENSE_PIN 22
-#define PUMPSENSE_PIN 23
-#define ESTOPSENSE_PIN 33
-#define MOTOR_TEMP_PIN 34
-#define PUMP_TEMP_PIN 35
-#define FLOW_IN_PIN 12
-#define FLOW_OUT_PIN 13
+// -------------------------------------------------------------------
+//    PIN DEFINITIONS 
+// -------------------------------------------------------------------
+#define ESTOP_PIN        13    // eStop button input pin
 
-#define SENSOR_API "/sensor"
-#define CONFIG_API "/config"
+#define ESTOPCTRL_PIN    18
+#define MOTORCTRL_PIN    19
+#define PUMPCTRL_PIN     21
+#define BENTCTRL_PIN     25
 
+#define MOTORSENSE_PIN   22
+#define PUMPSENSE_PIN    23
+#define ESTOPSENSE_PIN   33
 
-const char* STOP = "stop";
-const char* START = "start";
-const char* RUNNING = "running";
-const char* ERROR = "error";
+#define MOTOR_TEMP_PIN   34
+#define PUMP_TEMP_PIN    35
+#define FLOW_IN_PIN      12
+#define FLOW_OUT_PIN     13
 
-typedef enum { 
-    NO_MESSAGE = 0, 
-    MESSAGE_TBM_INIT = 1,  
-    TBM_START = 2,  
-    TBM_STOP = 3,  
-    TBM_ERROR = 4,  
-    TBM_DATA = 5,  
-} MessageID; 
+// -------------------------------------------------------------------
+//    CONSTANTS/THRESHOLDS
+// -------------------------------------------------------------------
+static const float AREF           = 3.3f;
+static const int   ADC_RESOLUTION = 4095;
+static const float SHUNT_RESISTOR = 150.0f;
+static const float maxTemp        = 3000.0f; // Example threshold
 
-MessageID incomingMessage = NO_MESSAGE; 
-MessageID outgoingMessage = NO_MESSAGE; 
-    
+// -------------------------------------------------------------------
+//    STATE MACHINE
+// -------------------------------------------------------------------
+enum TBMState {
+  STATE_CONFIG,
+  STATE_RUNNING,
+  STATE_ERROR,
+  STATE_STOP
+};
+
+// -------------------------------------------------------------------
+//    SENSOR & SYSTEM DATA STRUCTS
+// -------------------------------------------------------------------
 struct Sensor {
-    bool active;
-    int value;   // can be an array if we need multiple values.
-    signed int timestamp;
+  bool         active;
+  int          value;
+  unsigned long timestamp;
 };
 
 struct sys_json {
-    char* state;     // one of the state macros
-    Sensor motor_temp;
-    Sensor flow_temp;
-    Sensor flow_in;
-    Sensor flow_out;
-    Sensor motor_power; // val should be 1 if there is power
-    Sensor pump_power; // val should be 1 if there is power
-    Sensor bentonite_power; // val should be 1 if there is power
-    Sensor estop_button; // val should be 1 if e-stop is pressed
-    signed int global_time;
+  TBMState     state;
+  Sensor       motor_temp;
+  Sensor       flow_temp;
+  Sensor       flow_in;
+  Sensor       flow_out;
+  Sensor       motor_power;
+  Sensor       pump_power;
+  Sensor       bentonite_power;
+  Sensor       estop_button;
+  unsigned long global_time;
 };
+
+// -------------------------------------------------------------------
+//    GLOBALS (declared extern here, defined in tbm1.ino)
+// -------------------------------------------------------------------
+extern sys_json  systemData;
+extern TBMState  currentState;
+
+// -------------------------------------------------------------------
+//    FUNCTION PROTOTYPES
+// -------------------------------------------------------------------
+// eStop
+void eStop_setup();
+void eStop_loop();
+
+// JSON & system data
+void initSystemData();
+String constructJsonPayload();
+void sendJsonPayload(const String &payload);
+void JSON_loop();
+
+// Sensors
+void readSensors();
+float get_voltage(int raw_adc);
+float get_temperature(float voltage);
+float get_flowRate(float voltage);
+
+// State machine
+void state_setup();
+bool checkStopped();
+void updateSystemState();
+void state_loop();
+
+// -------------------------------------------------------------------
+//    HELPER: Convert TBMState enum -> string for JSON, etc.
+// -------------------------------------------------------------------
+inline const char* stateToString(TBMState s) {
+  switch(s) {
+    case STATE_CONFIG:  return "config";
+    case STATE_RUNNING: return "running";
+    case STATE_ERROR:   return "error";
+    case STATE_STOP:    return "stop";
+    default:            return "unknown";
+  }
+}
+
 #endif // TBM_H

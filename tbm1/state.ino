@@ -1,106 +1,98 @@
 #include <Arduino.h>
-#include <tbm.h>
+#include "tbm.h"
 
-// defines system states 
-enum State { 
-  CONFIG,  
-  RUNNING, 
-  ERROR, 
-  STOP
-}; 
-
-//sets current state to config 
-State currentState = CONFIG; 
-
-// temp threshold 
-// amplifier module used: AD8495
-const float maxTemp = 0;  
-
-// ref resolution - 32 bits 
-const float adcResolution = 65536;  
-
+// ---------------------------------------------------------
+//  Setup for state machine
+// ---------------------------------------------------------
 void state_setup() {
-  Serial.begin(9600);
-  Serial.println("System initialized - Entering CONFIG state");
+  Serial.println("state_setup: Entering CONFIG");
+  currentState = STATE_CONFIG;
 }
 
-void state_loop(){
-  // TBM_DATA 
-  switch (currentState) { 
-    case CONFIG: 
-      Serial.println("CONFIG: Configuring system"); 
-      // Send: TBM_CONFIG
-      if (!checkStopped()) { 
-        currentState = ERROR; 
-        // Send: TBM_ERROR
-      } else if (incomingMessage != TBM_START) { 
-        currentState = CONFIG; 
-      } else { 
-        currentState = RUNNING; 
+// ---------------------------------------------------------
+//  Check if all outputs are physically off
+// ---------------------------------------------------------
+bool checkStopped() {
+  if (digitalRead(MOTORCTRL_PIN) != LOW)  return false;
+  if (digitalRead(PUMPCTRL_PIN)  != LOW)  return false;
+  if (digitalRead(BENTCTRL_PIN)  != LOW)  return false;
+  return true;
+}
+
+// ---------------------------------------------------------
+//  Update systemData.state based on sensor data, e-stop, etc.
+//  This is separate from the finite state machine transitions.
+// ---------------------------------------------------------
+void updateSystemState() {
+  // Example: if E-stop is pressed, switch to ERROR
+  if (systemData.estop_button.value == 1) {
+    systemData.state = STATE_ERROR;
+    digitalWrite(ESTOPCTRL_PIN, HIGH); 
+    digitalWrite(MOTORCTRL_PIN, LOW);
+    digitalWrite(PUMPCTRL_PIN, LOW);
+    digitalWrite(BENTCTRL_PIN, LOW);
+    return;
+  }
+
+  // Example: check motor temp
+  if (systemData.motor_temp.value >= maxTemp) {
+    systemData.state = STATE_ERROR;
+    digitalWrite(ESTOPCTRL_PIN, HIGH); 
+    digitalWrite(MOTORCTRL_PIN, LOW);
+    digitalWrite(PUMPCTRL_PIN, LOW);
+    digitalWrite(BENTCTRL_PIN, LOW);
+    return;
+  }
+
+  // Otherwise, let it run
+  systemData.state = STATE_RUNNING;
+  digitalWrite(ESTOPCTRL_PIN, LOW);
+  digitalWrite(MOTORCTRL_PIN, HIGH);
+  digitalWrite(PUMPCTRL_PIN, HIGH);
+  digitalWrite(BENTCTRL_PIN, HIGH);
+}
+
+// ---------------------------------------------------------
+//  Finite state machine for TBM 
+//  (Transitions between CONFIG, RUNNING, ERROR, STOP)
+// ---------------------------------------------------------
+void state_loop() {
+  switch(currentState) {
+    case STATE_CONFIG:
+      Serial.println("STATE_CONFIG: Checking if system is stopped...");
+      if (!checkStopped()) {
+        currentState = STATE_ERROR;
+      } else {
+        currentState = STATE_RUNNING;
       }
-      break; 
+      break;
 
-    case RUNNING:
-      Serial.println("RUNNING - Current temp is %.1f°C\n", SystemData.motor_temp.value); 
-      if (SystemData.motor_temp.value >= maxTemp || SystemData.estop_button.value == 1 ) { 
-        Serial.println("ERROR: Stopping TBM"); 
-        currentState = ERROR; 
-        // TBM_ERROR
-      } else if (incomingMessage == TBM_STOP) {
-        Serial.println("TBM_STOP received - Stopping TBM"); 
-        currentState = ERROR; 
+    case STATE_RUNNING:
+      // Simple example: if systemData says "ERROR", jump to error
+      if (systemData.state == STATE_ERROR) {
+        currentState = STATE_ERROR;
+      } else {
+        // remain in RUNNING
+        Serial.printf("RUNNING: Motor temp = %d C\n", systemData.motor_temp.value);
       }
-      break; 
+      break;
 
-    case ERROR: 
-      
-      Serial.println("Stopping system"); 
-      digitalWrite(MOTORCTRL_PIN, LOW);     // stops motor
-      digitalWrite(PUMPCTRL_PIN, LOW);      // stops water pump 
-      digitalWrite(BENTCTRL_PIN, LOW);      // stops bentonite pump 
-      currentState = STOP; 
-      break; 
+    case STATE_ERROR:
+      Serial.println("STATE_ERROR: Turning off everything.");
+      digitalWrite(MOTORCTRL_PIN, LOW);
+      digitalWrite(PUMPCTRL_PIN, LOW);
+      digitalWrite(BENTCTRL_PIN, LOW);
+      currentState = STATE_STOP;
+      break;
 
-    case STOP:
-        // every time the system is stopped, it automatically resets. 
-        if (!checkStopped()) { 
-          currentState = ERROR; 
-        } else { 
-          Serial.println("System stopped. Resetting system."); 
-          if (incomingMessage != TBM_START) { 
-            currentState = STOP; 
-          } else { 
-            currentState = CONFIG; 
-          }  
-        }
-      break;  
-
-    default: 
-      Serial.println("Unknown state"); 
-      currentState = CONFIG; 
-      break; 
-
+    case STATE_STOP:
+      Serial.println("STATE_STOP: Checking if physically off...");
+      if (!checkStopped()) {
+        currentState = STATE_ERROR;
+      } else {
+        // For demo, we can cycle back to CONFIG
+        currentState = STATE_CONFIG;
+      }
+      break;
   }
 }
-
-bool checkStopped() { 
-  if (digitalRead(MOTORCTRL_PIN) != LOW) { 
-    Serial.println("Motor not stopped!"); 
-    return false; 
-  } else if (digitalRead(PUMPCTRL_PIN) != LOW) { 
-    Serial.println("Water pump not off!"); 
-    return false; 
-  } else if (digitalRead(BENTCTRL_PIN) != LOW) { 
-    Serial.println("Bentonite pump not off! "); 
-    return false; 
-  } else { 
-    return true; 
-  }
-}
-
-
-  
-
-
-  
-
