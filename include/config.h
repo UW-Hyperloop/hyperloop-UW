@@ -1,3 +1,6 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
 #include <Arduino.h>
 
 static const int RX_PIN = 16; // CH9121 TXD1 -> ESP32 RX2
@@ -8,3 +11,5 @@ extern HardwareSerial CH9121;
 
 void config();
 bool sendConfigCommand();
+
+#endif
