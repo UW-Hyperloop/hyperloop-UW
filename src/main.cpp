@@ -52,7 +52,7 @@ void sysData() {
   systemData.estop_button.timestamp  = 0;
 }
 
-string constructJsonPayload(){
+string constructJsonPayload() {
   StaticJsonDocument<512> doc;
 
   doc["state"] = systemData.state;
@@ -116,10 +116,60 @@ uint8_t* tbm_init() {
   string json = constructJsonPayload();
 
   for (int i = 0; i < json.length(); i++) {
-        msg[i + 2] = static_cast<uint8_t>(json[i]); // Convert char to ASCII and store in msg
-    }
+    msg[i + 2] = static_cast<uint8_t>(json[i]); // Convert char to ASCII and store in msg
+  }
+
+  Serial.println(json.length());
   
   return msg;
+}
+
+uint8_t* tbm_data() {
+  uint8_t* msg = new uint8_t[515];
+  msg[0] = 0x02;
+  msg[514] = 0x03;
+  msg[1] = 0x05;
+  string json = constructJsonPayload();
+
+  for (int i = 0; i < json.length(); i++) {
+    msg[i + 2] = static_cast<uint8_t>(json[i]); // Convert char to ASCII and store in msg
+  }
+
+  return msg;
+}
+
+void tbm_start_stop(int msg_id, int cmd) {
+  while (!CH9121.available()) {
+    continue;
+  }
+
+  uint8_t* msg = new uint8_t[3];
+  uint8_t readRet;
+  if (CH9121.available()) {
+    readRet = CH9121.readBytes(msg, 3);
+  }
+
+  if (readRet != 3) {
+    // error condition
+  }
+
+  if (msg[0] == MSG_START && msg[2] == MSG_END) {
+    if (msg[1] == msg_id) {   // message id must match tbm_start
+      pinMode(MOTORCTRL_PIN, OUTPUT);
+      pinMode(PUMPCTRL_PIN, OUTPUT);
+
+      digitalWrite(MOTORCTRL_PIN, cmd);
+      digitalWrite(PUMPCTRL_PIN, cmd);
+    }
+  }
+}
+
+void tbm_start() {
+  tbm_start_stop(1);
+}
+
+void tbm_stop() {
+  tbm_start_stop(0);
 }
 
 
@@ -143,6 +193,14 @@ void setup() {
   size_t msg_size = 515;
 
   CH9121.write(msg, msg_size);
+  bool flag = false;
+
+  while (!flag) {
+    if (CH9121.available()) {
+      break;
+    }
+    flag = true;
+  }
 }
 
 void loop() {
@@ -157,5 +215,11 @@ void loop() {
     int b = Serial.read();
     CH9121.write(b);
   }
+
+  delay(3000);
+  uint8_t* msg = tbm_data();
+  size_t msg_size = 515;
+
+  CH9121.write(msg, msg_size);
 }
  

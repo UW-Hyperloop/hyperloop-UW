@@ -18,7 +18,7 @@
 
 
 #define STOP "stop"
-#define START "start"
+#define CONFIG "start"
 #define RUNNING "running"
 #define ERROR "error"
 
