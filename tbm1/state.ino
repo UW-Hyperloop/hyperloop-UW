@@ -35,6 +35,11 @@ void state_loop() {
       break;
 
     case STATE_RUNNING:
+      if (systemData.motor_temp.value >= maxTemp || systemData.estop_button.value == 1) {
+        systemData.state = STATE_ERROR;
+        digitalWrite(ESTOPCTRL_PIN, HIGH);
+        break;  
+      } 
       digitalWrite(ESTOPCTRL_PIN, LOW);
       digitalWrite(MOTORCTRL_PIN, HIGH);
       digitalWrite(PUMPCTRL_PIN, HIGH);
@@ -43,11 +48,6 @@ void state_loop() {
       break;
 
     case STATE_ERROR:
-
-      if (systemData.motor_temp.value >= maxTemp || systemData.estop_button.value == 1) {
-        systemData.state = STATE_ERROR;
-        digitalWrite(ESTOPCTRL_PIN, HIGH); 
-      }
       Serial.println("STATE_ERROR: Turning off everything.");
       digitalWrite(MOTORCTRL_PIN, LOW);
       digitalWrite(PUMPCTRL_PIN, LOW);
@@ -66,4 +66,3 @@ void state_loop() {
       break;
   }
 }
-
