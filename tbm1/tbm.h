@@ -58,7 +58,6 @@ static const float maxTemp        = 3000.0f; // Example threshold
 enum TBMState {
   STATE_CONFIG,
   STATE_RUNNING,
-  STATE_ERROR,
   STATE_STOP
 };
 
