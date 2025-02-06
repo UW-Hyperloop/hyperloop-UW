@@ -21,12 +21,12 @@ bool checkStopped() {
 // ---------------------------------------------------------
 //  Shuts off TBM motor, estop, bentonite pump, and water pump 
 // ---------------------------------------------------------
-  stoppingTBM() { 
-        digitalWrite(ESTOPCTRL_PIN, HIGH);
-        digitalWrite(MOTORCTRL_PIN, LOW);
-        digitalWrite(PUMPCTRL_PIN, LOW);
-        digitalWrite(BENTCTRL_PIN, LOW);
-  }
+void stoppingTBM() { 
+  digitalWrite(ESTOPCTRL_PIN, HIGH);
+  digitalWrite(MOTORCTRL_PIN, LOW);
+  digitalWrite(PUMPCTRL_PIN, LOW);
+  digitalWrite(BENTCTRL_PIN, LOW);
+}
 // ---------------------------------------------------------
 //  Finite state machine for TBM 
 //  (Transitions between CONFIG, RUNNING, ERROR, STOP)
@@ -35,8 +35,7 @@ void state_loop() {
   switch(systemData.state) {
     case STATE_CONFIG:
       Serial.println("STATE_CONFIG: Checking if system is stopped...");
-        systemData.state = STATE_RUNNING;
-      }
+      systemData.state = STATE_RUNNING;
       break;
 
     case STATE_RUNNING:
@@ -64,13 +63,6 @@ void state_loop() {
         Serial.println("TRIED 100 TIMES TO STOP TBM - PULL THE PLUG!"); 
       }
       systemData.state = STATE_CONFIG;
-      }
       break;
   }
 }
-
-  
-
-
-  
-
