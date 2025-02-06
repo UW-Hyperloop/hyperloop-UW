@@ -18,7 +18,15 @@ bool checkStopped() {
   if (digitalRead(BENTCTRL_PIN)  != LOW)  return false;
   return true;
 }
-
+// ---------------------------------------------------------
+//  Shuts off TBM motor, estop, bentonite pump, and water pump 
+// ---------------------------------------------------------
+  stoppingTBM() { 
+        digitalWrite(ESTOPCTRL_PIN, HIGH);
+        digitalWrite(MOTORCTRL_PIN, LOW);
+        digitalWrite(PUMPCTRL_PIN, LOW);
+        digitalWrite(BENTCTRL_PIN, LOW);
+  }
 // ---------------------------------------------------------
 //  Finite state machine for TBM 
 //  (Transitions between CONFIG, RUNNING, ERROR, STOP)
@@ -27,17 +35,14 @@ void state_loop() {
   switch(systemData.state) {
     case STATE_CONFIG:
       Serial.println("STATE_CONFIG: Checking if system is stopped...");
-      if (!checkStopped()) {
-        systemData.state = STATE_ERROR;
-      } else {
         systemData.state = STATE_RUNNING;
       }
       break;
 
     case STATE_RUNNING:
       if (systemData.motor_temp.value >= maxTemp || systemData.estop_button.value == 1) {
-        systemData.state = STATE_ERROR;
-        digitalWrite(ESTOPCTRL_PIN, HIGH);
+        stoppingTBM(); 
+        systemData.state = STATE_STOP;
         break;  
       } 
       digitalWrite(ESTOPCTRL_PIN, LOW);
@@ -47,22 +52,25 @@ void state_loop() {
       Serial.printf("RUNNING: Motor temp = %d C\n", systemData.motor_temp.value);
       break;
 
-    case STATE_ERROR:
-      Serial.println("STATE_ERROR: Turning off everything.");
-      digitalWrite(MOTORCTRL_PIN, LOW);
-      digitalWrite(PUMPCTRL_PIN, LOW);
-      digitalWrite(BENTCTRL_PIN, LOW);
-      systemData.state = STATE_STOP;
-      break;
-
     case STATE_STOP:
       Serial.println("STATE_STOP: Checking if physically off...");
-      if (!checkStopped()) {
-        systemData.state = STATE_ERROR;
-      } else {
-        // For demo, we can cycle back to CONFIG
-        systemData.state = STATE_CONFIG;
+      int i = 0;
+      while (!checkStopped() || i != 100) {
+        stoppingTBM(); 
+        delay(5);
+        i++;  
+      } 
+      if (!checkStopped()) { 
+        Serial.println("TRIED 100 TIMES TO STOP TBM - PULL THE PLUG!"); 
+      }
+      systemData.state = STATE_CONFIG;
       }
       break;
   }
 }
+
+  
+
+
+  
+
