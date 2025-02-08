@@ -50,7 +50,7 @@ MessageID incomingMessage = NO_MESSAGE;
 static const float AREF           = 3.3f;
 static const int   ADC_RESOLUTION = 4095;
 static const float SHUNT_RESISTOR = 150.0f;
-static const float maxTemp        = 3000.0f; // Example threshold
+static const float maxTemp        = 50.0f; // Example threshold
 
 // -------------------------------------------------------------------
 //    STATE MACHINE
@@ -58,7 +58,8 @@ static const float maxTemp        = 3000.0f; // Example threshold
 enum TBMState {
   STATE_CONFIG,
   STATE_RUNNING,
-  STATE_STOP
+  STATE_STOP,
+  STATE_ERROR
 };
 
 // -------------------------------------------------------------------
@@ -93,26 +94,26 @@ extern TBMState  currentState;
 //    FUNCTION PROTOTYPES
 // -------------------------------------------------------------------
 // eStop
-void eStop_setup();
-void eStop_loop();
+// void eStop_setup();
+// void eStop_loop();
 
-// JSON & system data
-void initSystemData();
-String constructJsonPayload();
-void sendJsonPayload(const String &payload);
-void JSON_loop();
+// // JSON & system data
+// void initSystemData();
+// String constructJsonPayload();
+// void sendJsonPayload(const String &payload);
+// void JSON_loop();
 
-// Sensors
-void readSensors();
-float get_voltage(int raw_adc);
-float get_temperature(float voltage);
-float get_flowRate(float voltage);
+// // Sensors
+// void readSensors();
+// float get_voltage(int raw_adc);
+// float get_temperature(float voltage);
+// float get_flowRate(float voltage);
 
-// State machine
-void state_setup();
-bool checkStopped();
-void updateSystemState();
-void state_loop();
+// // State machine
+// void state_setup();
+// bool checkStopped();
+// void updateSystemState();
+// void state_loop();
 
 // -------------------------------------------------------------------
 //    HELPER: Convert TBMState enum -> string for JSON, etc.

@@ -56,13 +56,14 @@ void state_loop() {
       int i = 0;
       while (!checkStopped() || i != 100) {
         stoppingTBM(); 
-        delay(5);
         i++;  
       } 
       if (!checkStopped()) { 
         Serial.println("TRIED 100 TIMES TO STOP TBM - PULL THE PLUG!"); 
       }
-      systemData.state = STATE_CONFIG;
+      if (systemData.estop_button.value == 0 && systemData.motor_temp.value < maxTemp) {
+        systemData.state = STATE_CONFIG;
+      }
       break;
   }
 }
