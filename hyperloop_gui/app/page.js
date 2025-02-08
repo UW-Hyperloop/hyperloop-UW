@@ -29,28 +29,51 @@ const RowOne = styled.div`
 `;
 
 export default function Page() {
-  const [motorTemp, setMotorTemp] = useState(9.5);
+  const [motorTemp, setMotorTemp] = useState(20);
   const [waterFlowInRate, setWaterFlowInRate] = useState(96);
   const [waterFlowOutRate, setWaterFlowOutRate] = useState(96);
-  const [waterPumpTemp, setWaterPumpTemp] = useState(9.5);
-  const [machineState, setMachineState] = useState('ready');
+  const [waterPumpTemp, setWaterPumpTemp] = useState(20);
+  const [machineState, setMachineState] = useState('config');
 
   useEffect(() => {
-    const checkMachineStatus = async () => {
-      if (motorTemp > 40 || waterFlowInRate > 115) {
-        setMachineState('error');
-      } else {
-        setMachineState('ready');
-      }
-    };
-
-    const timer = setTimeout(checkMachineStatus, 1600);
-    return () => clearTimeout(timer);
+    if (motorTemp < 10 || motorTemp > 50 || waterFlowInRate < 20 || waterFlowInRate > 120) {
+      setMachineState('error');
+    }
   }, [motorTemp, waterFlowInRate]);
 
+  // sends certain commands to server
+  const sendCommandToServer = (command) => {
+    // TODO: format and send command to server
+    console.log("sending command: " + command);
+  };
+
+  // start stop button handling
+  const toggleStartStop = () => {
+    if(machineState === 'config'){
+      //start machine
+      setMachineState('running');
+      sendCommandToServer("TBM_start")
+    }
+    else if(machineState === 'running'){
+      setMachineState('stopped');
+      sendCommandToServer("TBM_stop");
+      alert("stopping and resetting machine")
+    }
+  };
+
+  // mock reset machine 
+  useEffect(() => {
+    console.log(machineState);
+    if(machineState === 'stopped'){
+      setTimeout(() => {
+        console.log("machine reset");
+        setMachineState('config');
+      }, 3000);
+    }
+  }, [machineState]);
   return (
     <PageContainer>
-      <StatusIndicators machineState={machineState} />
+      <StatusIndicators machineState={machineState} startStopToggle={toggleStartStop}/>
       <RowOne>
         <WaterPumpGauge 
           value={waterPumpTemp} 
@@ -59,6 +82,7 @@ export default function Page() {
         <MotorTempGauge 
           value={motorTemp} 
           onChange={setMotorTemp} 
+          machineState={machineState}
         />
       </RowOne>
       <WaterFlowGauge 
