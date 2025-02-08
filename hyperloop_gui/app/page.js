@@ -82,6 +82,7 @@ export default function Page() {
         <MotorTempGauge 
           value={motorTemp} 
           onChange={setMotorTemp} 
+          machineState={machineState}
         />
       </RowOne>
       <WaterFlowGauge 
