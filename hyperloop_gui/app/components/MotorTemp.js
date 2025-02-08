@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { useEffect, useState } from "react";
 
 const Container = styled.div`
   background: #1C1C1C;
@@ -66,7 +67,7 @@ const Marker = styled.div`
   
   &::before {
     content: '${props => props.position}';
-    color: ${props => props.position > 40 ? '#FF4F4F' : '#00ff00'};
+    color: ${props => props.isStale ? '#9F9F9F' : props.position > 40 ? '#FF4F4F' : '#00ff00'};
     display: block;
     margin-bottom: 10px;
     font-size: 20px;
@@ -83,7 +84,7 @@ const Marker = styled.div`
     display: block;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 25px solid ${props => props.position > 40 ? '#FF4F4F' : '#00ff00'};
+    border-top: 25px solid ${props => props.isStale ? '#9F9F9F' : props.position > 40 ? '#FF4F4F' : '#00ff00'};
     position: absolute;
     top: 25px;
     transition: border-top-color 0.1s ease-in-out;
@@ -143,6 +144,12 @@ const Title = styled.div`
   font-size: 16px;
   margin-top: 10px;
 `;
+const StatusMessage = styled.div`
+  color: #FFFFFF;
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
+`;
 
 const Slider = styled.input`
   width: 100%;
@@ -172,7 +179,14 @@ const Slider = styled.input`
   }
 `;
 
-const MotorTempGauge = ({ value, onChange }) => {
+const MotorTempGauge = ({ value, onChange, machineState }) => {
+  const [isStale, setIsStale] = useState(true);
+
+  useEffect(() => {
+    setIsStale(machineState !== "running");
+    console.log("machine state: " + machineState);
+  }, [machineState]);
+
   return (
     <Container>
       <GaugeContainer>
@@ -187,7 +201,7 @@ const MotorTempGauge = ({ value, onChange }) => {
             <div data-value="0" />
             <div data-value="40" />
           </ScaleMarkers>
-          <Marker position={value} />
+          <Marker position={value} isStale={isStale}/>
         </GaugeScale>
         <ScaleNumbers>
           {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map((num) => (
@@ -205,6 +219,7 @@ const MotorTempGauge = ({ value, onChange }) => {
           ))}
         </ScaleNumbers>
       </GaugeContainer>
+      <StatusMessage>Status: {isStale?  "Stale" : "Active"}</StatusMessage>
       <Slider
         type="range"
         min="0"

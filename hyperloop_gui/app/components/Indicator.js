@@ -1,7 +1,7 @@
 "use client";
 
 import styled from 'styled-components';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const TopSection = styled.div`
   width: 100%;
@@ -24,7 +24,7 @@ const StatusDot = styled.span`
   border-radius: 50%;
   background-color: ${props => {
     switch (props.status) {
-      case 'ready': return '#FFDC2E';
+      case 'config': return '#FFDC2E';
       case 'running': return '#41F21D';
       case 'stopped': return '#797979';
       case 'error': return '#FF4F4F';
@@ -70,23 +70,22 @@ const Button = styled.button`
   }
 `;
 
-const Indicators = ({ machineState }) => {
-    const [isRunning, setIsRunning] = useState(false);
+const Indicators = ({ machineState, startStopToggle }) => {
+    const [isRunning, setIsRunning] = useState(machineState === 'running');
   
     const handleMachineToggle = async () => {
-      if (isRunning) {
-        setIsRunning(false);
-      } else {
-        setIsRunning(true);
-      }
+      startStopToggle();
     };
   
+    useEffect(()=>{
+      setIsRunning(machineState === 'running');
+    }, [machineState]);
     return (
       <TopSection>
         <StatusIndicator>
           <StatusDot status={machineState} />
           <StatusText>
-            {machineState === 'ready' && 'Machine is ready'}
+            {machineState === 'config' && 'Machine is ready'}
             {machineState === 'running' && 'Machine is running'}
             {machineState === 'stopped' && 'Machine is stopped'}
             {machineState === 'error' && 'Machine has error'}
@@ -96,7 +95,7 @@ const Indicators = ({ machineState }) => {
           isRunning={isRunning} 
           onClick={handleMachineToggle}
         // this is for if we want to disable the button if there is an error
-        //   disabled={!isRunning && machineState === 'error'}
+          disabled={machineState === 'error'}
         //   disabled={isRunning && machineState === 'error'}
         >
           {isRunning ? 'Stop machine' : 'Start machine'}
