@@ -12,7 +12,7 @@
 #define ESTOPCTRL_PIN    12
 #define MOTORCTRL_PIN    13
 #define PUMPCTRL_PIN     21
-#define BENTCTRL_PIN     25
+#define BENTCTRL_PIN     26
 
 #define MOTORSENSE_PIN 22
 #define PUMPSENSE_PIN 23
@@ -21,6 +21,7 @@
 #define PUMP_TEMP_PIN 35
 //#define FLOW_IN_PIN 12
 //#define FLOW_OUT_PIN 13
+
 // SPI for thermocouple
 #define DO   18 
 #define CS   19

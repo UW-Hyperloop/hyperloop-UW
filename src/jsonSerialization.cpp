@@ -6,7 +6,7 @@ using namespace std;
 //  Initialize all fields of systemData
 // ---------------------------------------------------------
 void initSystemData() {
-  systemData.state         = STATE_STOP;
+  systemData.state         = STATE_CONFIG;
   systemData.global_time   = 0;
 
   systemData.motor_temp    = { true, 0, 0 };
@@ -40,6 +40,11 @@ String constructJsonPayload() {
   flowTempObj["value"]     = systemData.flow_temp.value;
   flowTempObj["timestamp"] = systemData.flow_temp.timestamp;
 
+  // JsonObject estopObj = doc["estop"].to<JsonObject>();
+  // estopObj["active"]    = systemData.estop_button.active;
+  // estopObj["value"]     = systemData.estop_button.value;
+  // estopObj["timestamp"] = systemData.estop_button.timestamp;
+ 
   // ... flow_in, flow_out, motor_power, pump_power, etc.
 
   // Done, serialize
