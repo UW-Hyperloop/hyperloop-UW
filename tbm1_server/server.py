@@ -5,26 +5,26 @@
 import socket
 import json
 import threading
-import keyboard
+#import keyboard
 
 ###################################
 #Detecting Keystroke to Send Data to ESP or Stop the connection with ESP
 KEY_SIGNAL = False
 CHAR = None
 
-def listen_for_keys():
-    global CHAR
-    global KEY_SIGNAL
-    while True:
-        key = keyboard.read_event()  # Wait for any key press
-        if key.event_type == keyboard.KEY_DOWN:  # Detect key press
-            KEY_SIGNAL = True  # Set flag
-            CHAR = key.name
+#def listen_for_keys():
+#    global CHAR
+#    global KEY_SIGNAL
+#    while True:
+#        key = keyboard.read_event()  # Wait for any key press
+#        if key.event_type == keyboard.KEY_DOWN:  # Detect key press
+#            KEY_SIGNAL = True  # Set flag
+#            CHAR = key.name
 ###################################
 
 #Thread to respond to keystroke anytime
-t = threading.Thread(target=listen_for_keys, daemon=True)
-t.start()
+#t = threading.Thread(target=listen_for_keys, daemon=True)
+#t.start()
 
 #TBM Class
 class TBM:
@@ -72,7 +72,7 @@ server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  #AF_INET impl
 
 # Step 2: Bind the socket to an IP address and port
 host = '0.0.0.0'  # Accept connections from any IP
-port = 12345      # Choose a port (make sure it's not in use)
+port = 12346      # Choose a port (make sure it's not in use)
 server_socket.bind((host, port))  #Use "bind" to associate the server with an IP address and port
 
 # Step 3: Listen for incoming connections
@@ -107,16 +107,20 @@ while True:
         # Receiving Data from Client
         # Data format from Client: [start byte, Message Type, Json, End byte]
         received_data = client_socket.recv(1024)
+
         if received_data.startswith(b'\x02') and received_data.endswith(b'\x03'):
             print("Json Format")
-            # Strip start and end bytes
-            json_data = ""
-            for data in received_data[2:460]:
-                json_data += chr(data)
-
-#Broken Pipe
-
-            # json_data = chr(received_data[2:460]) # Remove start/end bytes
+            # Strip start and end bytes and convert to string
+            json_data = received_data[2:-1].decode().strip()
+            
+            # Find the start and end of the JSON data
+            json_start = json_data.find('{')
+            json_end = json_data.rfind('}') + 1  # Include the closing brace
+            
+            if json_start != -1 and json_end != -1:
+                json_data = json_data[json_start:json_end]
+                
+            print(f"Cleaned JSON: {json_data}")
             received_refined_data = json.loads(json_data)  # Parse JSON
             tbm.TBMupdate(received_refined_data)    #Passing the data to the TBM's function to update TBM
             print(received_refined_data)
@@ -126,18 +130,18 @@ while True:
 
         
         ###################################
-        if KEY_SIGNAL:
-            #Stop Connecting with ESP
-            if CHAR == 's':
-                break
-            if CHAR == 't':
-                client_socket.send("DATA".encode())
+        #if KEY_SIGNAL:
+        #    #Stop Connecting with ESP
+        #    if CHAR == 's':
+        #        break
+        #    if CHAR == 't':
+        #        client_socket.send("DATA".encode())
         ###################################
 
     except Exception as e:
         print(f"Error receiving or processing data: {e}")
 
-t.join()
+#t.join()
 
 # import socket
 #
