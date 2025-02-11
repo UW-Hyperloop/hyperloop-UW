@@ -8,7 +8,7 @@ void eStop_loop() {
     int current_sample = millis();
     if (current_sample - last_sample > 500) {
       // Read the state of the emergency stop button
-      int buttonState = digitalRead(ESTOPCTRL_PIN);
+      int buttonState = digitalRead(ESTOPSENSE_PIN);
     
       if (buttonState == HIGH) {
           Serial.println("Emergency Stop Activated!");
