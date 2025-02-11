@@ -7,6 +7,7 @@ import styled from 'styled-components';
 import WaterFlowGauge from "./components/WaterFlow";
 import StatusIndicators from "./components/Indicator";
 import ErrorMessages from "./components/ErrorMessages";
+import FlowMeter from './components/FlowMeter';
 
 const PageContainer = styled.div`
   background-color: #1C1C1C;
@@ -36,7 +37,7 @@ export default function Page() {
   const [machineState, setMachineState] = useState('config');
 
   useEffect(() => {
-    if (motorTemp < 10 || motorTemp > 50 || waterFlowInRate < 20 || waterFlowInRate > 120) {
+    if (motorTemp < 10 || motorTemp > 50 || waterFlowInRate < 40 || waterFlowInRate > 200) {
       setMachineState('error');
     }
   }, [motorTemp, waterFlowInRate]);
@@ -75,15 +76,26 @@ export default function Page() {
     <PageContainer>
       <StatusIndicators machineState={machineState} startStopToggle={toggleStartStop}/>
       <RowOne>
-        <WaterPumpGauge 
-          value={waterPumpTemp} 
-          onChange={setWaterPumpTemp} 
+        <FlowMeter 
+          title={"Pump Flow Rate"}
+          value={waterFlowInRate} 
+          onChange={setWaterFlowInRate}
+          machineState={machineState}
+          max={250}
         />
         <MotorTempGauge 
           value={motorTemp} 
           onChange={setMotorTemp} 
           machineState={machineState}
         />
+        {/**
+        colorRanges={[ fahrenheit 
+          { min: 40, max: 65, color: 'red' },      // Critical low
+          { min: 65, max: 75, color: 'yellow' },  // Warning low
+          { min: 75, max: 85, color: 'green' },   // Safe range
+          { min: 85, max: 90, color: 'yellow' },  // Warning high
+          { min: 90, max: 110, color: 'red' },     // Critical high
+        ]} */}
       </RowOne>
       <WaterFlowGauge 
         direction="IN" 
