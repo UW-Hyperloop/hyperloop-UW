@@ -1,10 +1,12 @@
 #include <Arduino.h>
 #include "tbm.h"
-
+// #include "sensors.ino"
+// #include "comms.ino"
+// #include "state.ino"
+// #include "eStop.ino"
+// #include "jsonSerialization.ino"
 
 sys_json systemData;       
-TBMState currentState = STATE_CONFIG; 
-
 
 void setup() {
   Serial.begin(115200);
@@ -38,8 +40,6 @@ void loop(){
 
   readSensors();
 
-
-  updateSystemState();
 
   state_loop();
 
