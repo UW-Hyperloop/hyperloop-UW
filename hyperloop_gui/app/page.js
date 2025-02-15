@@ -36,6 +36,41 @@ export default function Page() {
   const [waterPumpTemp, setWaterPumpTemp] = useState(20);
   const [machineState, setMachineState] = useState('config');
 
+  /*
+  useEffect(() => {
+    // Step 1: Connect to the WebSocket server
+    const socket = new WebSocket('ws://localhost:5000'); // Adjust URL if necessary
+ 
+    // Step 2: Handle incoming WebSocket messages
+    socket.onmessage = function (event) {
+      console.log(event);
+      const data = JSON.parse(event.data); // Parse the JSON data
+      const newMotorTemp = data.motor_temp.value;
+      if(newMotorTemp){
+        setMotorTemp(Math.floor(newMotorTemp * 100) / 100);
+      }
+      const newCircuitTemp = data.circuit_temp.value;
+      if(newCircuitTemp){
+        setCircuitTemp(Math.floor(newCircuitTemp * 100) / 100);
+      }
+      const newFlow = data.flow.value;
+      if(newFlow){
+        setData(Math.floor(newFlow * 100) / 100);
+      }
+    };
+ 
+    // Step 3: Handle WebSocket connection close
+    socket.onclose = function () {
+      console.log('WebSocket connection closed');
+    };
+ 
+    // Step 4: Clean up WebSocket connection on component unmount
+    return () => {
+      socket.close();
+    };
+  }, []);
+  */
+ 
   useEffect(() => {
     if (motorTemp < 10 || motorTemp > 50 || waterFlowInRate < 40 || waterFlowInRate > 200) {
       setMachineState('error');
@@ -97,6 +132,7 @@ export default function Page() {
           { min: 90, max: 110, color: 'red' },     // Critical high
         ]} */}
       </RowOne>
+      {/**
       <WaterFlowGauge 
         direction="IN" 
         value={waterFlowInRate} 
@@ -107,6 +143,8 @@ export default function Page() {
         value={waterFlowOutRate} 
         onChange={setWaterFlowOutRate}
       />
+       */}
+      
       <ErrorMessages 
         motorTemp={motorTemp}
         waterFlowRate={waterFlowInRate}
