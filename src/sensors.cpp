@@ -166,8 +166,6 @@ void readSensors() {
   systemData.bentonite_power.timestamp = millis();
 
   // 8. E-stop sense
-  int eStopVal = digitalRead(ESTOPSENSE_PIN);
-  systemData.estop_button.value        = eStopVal;
   systemData.estop_button.timestamp    = millis();
 
   // 9. Update global_time

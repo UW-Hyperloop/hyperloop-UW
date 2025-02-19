@@ -6,7 +6,6 @@
 sys_json systemData;
 
 using namespace std;
-static TBMState STATE = STATE_CONFIG;
 
 HardwareSerial CH9121(2);
 
@@ -16,7 +15,7 @@ void setup() {
   pinMode(CFG_PIN, OUTPUT);
   delay(200);
 
-  if (STATE == STATE_CONFIG) {
+  if (systemData.state == STATE_CONFIG) {
     config();
   }
 
@@ -26,6 +25,8 @@ void setup() {
   uint8_t* msg = tbm_init();
 
   CH9121.write(msg, MSG_SIZE);
+  Serial.flush();
+  delete[] msg;
   state_loop();
   eStop_loop();
   tbm_start_stop();
@@ -34,22 +35,31 @@ void setup() {
 
 void loop() {
   eStop_loop();
-  // Pass CH9121 -> Serial Monitor
-  if (CH9121.available()) {
-    int b = CH9121.read();
-    Serial.write(b);
-  }
- 
-  // Pass Serial Monitor -> CH9121
-  if (Serial.available()) {
-    int b = Serial.read();
-    CH9121.write(b);
-  }
-  readSensors();
   state_loop();
-  uint8_t* msg = tbm_data();
-  CH9121.write(msg, MSG_SIZE);
-  delay(1000);
+  tbm_start_stop();
+  state_loop();
+  // Pass CH9121 -> Serial Monitor
+  // if (CH9121.available()) {
+  //   int b = CH9121.read();
+  //   Serial.write(b);
+  // }
+ 
+  // // Pass Serial Monitor -> CH9121
+  // if (Serial.available()) {
+  //   int b = Serial.read();
+  //   CH9121.write(b);
+  // }
+
+  if (systemData.state == STATE_RUNNING) {
+    readSensors();
+    uint8_t* msg = tbm_data();
+    CH9121.write(msg, MSG_SIZE);
+    Serial.flush();
+    delete[] msg;
+    delay(500);
+  } else {
+    readSensors();
+  }
   tbm_start_stop();
   state_loop();
   eStop_loop();

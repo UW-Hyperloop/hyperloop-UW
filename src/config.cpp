@@ -66,7 +66,7 @@ void config() {
 
     // 3) Set destination port = 12345 (command = 0x16)
     {
-      uint8_t cmd[] = {0x57, 0xAB, 0x16, 0x39, 0x30};
+      uint8_t cmd[] = {0x57, 0xAB, 0x16, 0x3A, 0x30};
       bool ok = sendConfigCommand(cmd, sizeof(cmd));
       Serial.println(ok ? "IP=192.168.0.10 (OK)" : "Set IP (FAILED)");
     }

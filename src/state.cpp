@@ -22,7 +22,7 @@ bool checkStopped() {
 //  Shuts off TBM motor, estop, bentonite pump, and water pump 
 // ---------------------------------------------------------
 void stoppingTBM() { 
-  digitalWrite(ESTOPCTRL_PIN, HIGH);
+  // digitalWrite(ESTOPCTRL_PIN, HIGH);   why is this here?
   digitalWrite(MOTORCTRL_PIN, LOW);
   digitalWrite(PUMPCTRL_PIN, LOW);
   digitalWrite(BENTCTRL_PIN, LOW);
@@ -34,15 +34,15 @@ void stoppingTBM() {
 void state_loop() {
   switch(systemData.state) {
     case STATE_CONFIG:
-      Serial.println("STATE_CONFIG: Checking if system is stopped...");
-      systemData.state = STATE_RUNNING;
+      Serial.println("STATE_CONFIG");
+      // systemData.state = STATE_RUNNING;
       break;
 
     case STATE_RUNNING:
       if (systemData.motor_temp.value >= maxTemp || systemData.estop_button.value == 1) {
         stoppingTBM(); 
         systemData.state = STATE_STOP;
-        break;  
+        break;
       } 
       digitalWrite(ESTOPCTRL_PIN, LOW);
       digitalWrite(MOTORCTRL_PIN, HIGH);
@@ -52,7 +52,7 @@ void state_loop() {
       break;
 
     case STATE_STOP:
-      Serial.println("STATE_STOP: Checking if physically off...");
+      Serial.println("STATE_STOP");
       int i = 0;
       while (!checkStopped() || i != 100) {
         stoppingTBM(); 
@@ -61,9 +61,9 @@ void state_loop() {
       if (!checkStopped()) { 
         Serial.println("TRIED 100 TIMES TO STOP TBM - PULL THE PLUG!"); 
       }
-      if (systemData.estop_button.value == 0 && systemData.motor_temp.value < maxTemp) {
-        systemData.state = STATE_CONFIG;
-      }
+      // if (systemData.estop_button.value == 0 && systemData.motor_temp.value < maxTemp) {
+      //   systemData.state = STATE_CONFIG;
+      // }
       break;
   }
 }
