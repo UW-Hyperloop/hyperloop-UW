@@ -9,13 +9,11 @@
 //    PIN DEFINITIONS 
 // -------------------------------------------------------------------
 
-#define ESTOPCTRL_PIN    12
-#define MOTORCTRL_PIN    13
-#define PUMPCTRL_PIN     21
+#define POWCTRL_PIN     21
 #define BENTCTRL_PIN     26
 
-#define MOTORSENSE_PIN 22
-#define PUMPSENSE_PIN 23
+// #define MOTORSENSE_PIN 22
+// #define PUMPSENSE_PIN 23
 #define ESTOPSENSE_PIN 33
 #define MOTOR_TEMP_PIN 34
 #define PUMP_TEMP_PIN 35

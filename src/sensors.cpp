@@ -151,15 +151,15 @@ void readSensors() {
   systemData.flow_out.value       = (int)flowRateOut;
   systemData.flow_out.timestamp   = millis();
 
-  // 5. Motor power sense (digital)
-  int motorPow = digitalRead(MOTORSENSE_PIN);
-  systemData.motor_power.value    = motorPow;
-  systemData.motor_power.timestamp= millis();
+  // // 5. Motor power sense (digital)
+  // int motorPow = digitalRead(MOTORSENSE_PIN);
+  // systemData.motor_power.value    = motorPow;
+  // systemData.motor_power.timestamp= millis();
 
-  // 6. Pump power sense (digital)
-  int pumpPow = digitalRead(PUMPSENSE_PIN);
-  systemData.pump_power.value     = pumpPow;
-  systemData.pump_power.timestamp = millis();
+  // // 6. Pump power sense (digital)
+  // int pumpPow = digitalRead(PUMPSENSE_PIN);
+  // systemData.pump_power.value     = pumpPow;
+  // systemData.pump_power.timestamp = millis();
 
   // 7. Bentonite power sense (if no pin, set 0)
   systemData.bentonite_power.value     = 0;

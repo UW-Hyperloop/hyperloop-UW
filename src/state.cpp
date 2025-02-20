@@ -13,8 +13,7 @@ void state_setup() {
 //  Check if all outputs are physically off
 // ---------------------------------------------------------
 bool checkStopped() {
-  if (digitalRead(MOTORCTRL_PIN) != LOW)  return false;
-  if (digitalRead(PUMPCTRL_PIN)  != LOW)  return false;
+  if (digitalRead(POWCTRL_PIN) != LOW)  return false;
   if (digitalRead(BENTCTRL_PIN)  != LOW)  return false;
   return true;
 }
@@ -23,8 +22,7 @@ bool checkStopped() {
 // ---------------------------------------------------------
 void stoppingTBM() { 
   // digitalWrite(ESTOPCTRL_PIN, HIGH);   why is this here?
-  digitalWrite(MOTORCTRL_PIN, LOW);
-  digitalWrite(PUMPCTRL_PIN, LOW);
+  digitalWrite(POWCTRL_PIN, LOW);
   digitalWrite(BENTCTRL_PIN, LOW);
 }
 // ---------------------------------------------------------
@@ -44,9 +42,7 @@ void state_loop() {
         systemData.state = STATE_STOP;
         break;
       } 
-      digitalWrite(ESTOPCTRL_PIN, LOW);
-      digitalWrite(MOTORCTRL_PIN, HIGH);
-      digitalWrite(PUMPCTRL_PIN, HIGH);
+      digitalWrite(POWCTRL_PIN, HIGH);
       digitalWrite(BENTCTRL_PIN, HIGH);
       Serial.printf("RUNNING: Motor temp = %d C\n", systemData.motor_temp.value);
       break;

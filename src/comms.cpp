@@ -17,10 +17,8 @@ uint8_t* tbm_init() {
   }
 
   Serial.println(json.length());
-  pinMode(MOTORCTRL_PIN, OUTPUT);
-  pinMode(PUMPCTRL_PIN, OUTPUT);
+  pinMode(POWCTRL_PIN, OUTPUT);
   pinMode(ESTOPSENSE_PIN, INPUT);
-  pinMode(ESTOPCTRL_PIN, OUTPUT);
   systemData.estop_button.value = 0;
 
   // need to figure out logic for pump and motor controls when in config vs running. 
@@ -32,48 +30,6 @@ uint8_t* tbm_init() {
   
   return msg;
 }
-
-// void tbm_start_stop() {
-//   // if (!CH9121.available()) {
-//   //   delay(1000);
-//   //   if (!CH9121.available()) {
-//   //     Serial.println("no incoming message");
-//   //     return;
-//   //   }
-//   // }
-
-//   uint8_t* msg = new uint8_t[3];
-//   CH9121.flush();
-//   if (CH9121.available() < 3) {
-//     // Not enough data yet, return and try again on the next loop iteration
-//     return;
-//   }
-//   Serial.println("we through");
-//   uint8_t readRet = CH9121.readBytes(msg, 3);
-//   Serial.println(readRet);
-//   if (readRet != 3) {
-//     // error condition
-//     return;
-//   }
-
-//   Serial.println("valid msg");
-//   Serial.println(static_cast<String>(msg[0]));
-//   Serial.println(static_cast<String>(msg[2]));
-//   Serial.println("over");
-//   if (msg[0] == MSG_START && msg[2] == MSG_END) {
-//     if (msg[1] == TBM_START) {   // message id must match tbm_start
-//       digitalWrite(MOTORCTRL_PIN, HIGH);
-//       digitalWrite(PUMPCTRL_PIN, HIGH);
-//       systemData.state = STATE_RUNNING;
-//     } else if (msg[1] == TBM_STOP) {
-//       digitalWrite(MOTORCTRL_PIN, LOW);
-//       digitalWrite(PUMPCTRL_PIN, LOW);
-//       systemData.state = STATE_STOP;
-//     } else {
-//         // error condition
-//     }
-//   }
-// }
 
 void tbm_start_stop() {
   // If fewer than 3 bytes are available, we can't parse a command yet.
@@ -93,19 +49,18 @@ void tbm_start_stop() {
   if (buffer[0] == MSG_START && buffer[2] == MSG_END) {
     // Middle byte tells us which command
     if (buffer[1] == TBM_START) {
-      if (digitalRead(ESTOPSENSE_PIN)) {
+      if (!digitalRead(ESTOPSENSE_PIN)) {
         Serial.println("estop activated. Reject start");
+        Serial.flush();
         // send out as json as well if possible. separate logic chain for that :(
         return;
       }
       Serial.println("Received TBM_START command");
-      digitalWrite(MOTORCTRL_PIN, HIGH);
-      digitalWrite(PUMPCTRL_PIN, HIGH);
+      digitalWrite(POWCTRL_PIN, HIGH);
       systemData.state = STATE_RUNNING;
     } else if (buffer[1] == TBM_STOP) {
       Serial.println("Received TBM_STOP command");
-      digitalWrite(MOTORCTRL_PIN, LOW);
-      digitalWrite(PUMPCTRL_PIN, LOW);
+      digitalWrite(POWCTRL_PIN, LOW);
       systemData.state = STATE_STOP;
     } else {
       Serial.println("Received unknown TBM command");

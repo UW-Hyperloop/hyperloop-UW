@@ -12,11 +12,10 @@ void eStop_loop() {
     // Read the state of the emergency stop button
     int buttonState = digitalRead(ESTOPSENSE_PIN);
 
-    if (buttonState == HIGH) {
+    if (buttonState == LOW) {
       Serial.println("Emergency Stop Activated!");
       // TODO: add stop logic
       systemData.estop_button.value = 1;
-      digitalWrite(ESTOPCTRL_PIN, HIGH);
       Serial.flush();
     } else {
       TBMState state = systemData.state;
@@ -26,7 +25,6 @@ void eStop_loop() {
         if (systemData.estop_button.value == 1) {        
           systemData.state = STATE_CONFIG;
           systemData.estop_button.value = 0;
-          digitalWrite(ESTOPCTRL_PIN, LOW);
         } else {
           systemData.estop_button.value = 0;
         }
