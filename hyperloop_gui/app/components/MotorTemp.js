@@ -142,7 +142,7 @@ const ScaleNumbers = styled.div`
 const Title = styled.div`
   color: white;
   font-size: 16px;
-  margin-top: 10px;
+  margin-bottom: 60px;
 `;
 const StatusMessage = styled.div`
   color: #FFFFFF;
@@ -189,6 +189,7 @@ const MotorTempGauge = ({ value, onChange, machineState }) => {
 
   return (
     <Container>
+      <Title>Motor temperature (Celsius)</Title>
       <GaugeContainer>
         <GaugeScale>
           <GridLines>
@@ -214,7 +215,7 @@ const MotorTempGauge = ({ value, onChange, machineState }) => {
                 transform: num === 50 ? 'translateX(-50%)' : 'translateX(-50%)'
               }}
             >
-              {num === 50 ? `${num}°C` : num}
+              {num === 50 ? `${num}` : num}
             </span>
           ))}
         </ScaleNumbers>
@@ -228,7 +229,7 @@ const MotorTempGauge = ({ value, onChange, machineState }) => {
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
       />
-      <Title>Motor temperature (Celsius)</Title>
+      
     </Container>
   );
 };

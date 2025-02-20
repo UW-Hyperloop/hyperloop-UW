@@ -1,3 +1,9 @@
+/**
+ * This is a test server, won't be used in production
+ * Set up to test if GUI oculd recieve websocket messgages
+ */
+
+
 const WebSocket = require('ws');
 
 // Create a WebSocket server on port 5000

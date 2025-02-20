@@ -6,7 +6,7 @@ import socket
 import json
 import threading
 import keyboard
-
+import websockets  # needs pip install websockets?
 ###################################
 #Detecting Keystroke to Send Data to ESP or Stop the connection with ESP
 KEY_SIGNAL = False
@@ -64,6 +64,24 @@ class TBM:
                 attr[:] = list(value.values())  # Update list with dictionary values
                 setattr(self, key, attr)  # Save updated list
 
+    def to_dict(self):
+        # Returns a dictionary containing all TBM attributes.
+        # used to send to GUI client
+        return {
+            "state": self.state,
+            "motor_temp": self.motor_temp,
+            "pump_temp": self.pump_temp,
+            "flow_in": self.flow_in,
+            "flow_out": self.flow_out,
+            "motor_power": self.motor_power,
+            "pump_power": self.pump_power,
+            "bentonite_power": self.bentonite_power,
+            "estop_pressed": self.estop_pressed,
+            "global_time": self.global_time,
+            "active": self.active,
+            "value": self.value,
+            "timestamp": self.timestamp
+        }
 
 
 # Socket is a combination of IP address, port, and protocol
@@ -151,7 +169,113 @@ while True:
         print(f"Error receiving or processing data: {e}")
 
 t.join()
+""" 
+async def broadcast_loop(tbm: TBM, connected_clients: Set[websockets.WebSocketServerProtocol]):
+    ###
+    Periodically broadcast the TBM state to all connected WebSocket clients.
+    ###
+    while True:
+        await asyncio.sleep(0.5)  # 500 ms interval
 
+        data_dict = tbm.to_dict()
+        message = json.dumps(data_dict)
+
+        # Broadcast to all current clients
+        to_remove = []
+        for ws in connected_clients:
+            try:
+                await ws.send(message)
+            except websockets.exceptions.ConnectionClosed:
+                to_remove.append(ws)
+
+        # Clean up any disconnected websockets
+        for ws in to_remove:
+            connected_clients.remove(ws)
+
+
+async def websocket_handler(websocket: websockets.WebSocketServerProtocol, path: str,
+                            tbm: TBM, connected_clients: Set[websockets.WebSocketServerProtocol]):
+    ###
+    Handler for each new WebSocket connection.
+    ###
+    connected_clients.add(websocket)
+    print(f"[WS] New client connected. Total clients: {len(connected_clients)}")
+    try:
+        async for msg in websocket:
+            # Handle messages from client if needed
+            print(f"[WS] Received from client: {msg}")
+    finally:
+        # On disconnect, remove from the set
+        connected_clients.remove(websocket)
+        print(f"[WS] Client disconnected. Total clients: {len(connected_clients)}")
+
+
+def start_websocket_server(tbm: TBM, ws_host: str = "0.0.0.0", ws_port: int = 8001):
+    ###
+    Start the WebSocket server in an asyncio event loop.
+    Runs the `broadcast_loop` indefinitely, so this function blocks.
+    ###
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+
+    connected_clients: Set[websockets.WebSocketServerProtocol] = set()
+
+    # Create the server
+    start_server = websockets.serve(
+        lambda ws, path: websocket_handler(ws, path, tbm, connected_clients),
+        ws_host,
+        ws_port
+    )
+
+    # Run the server
+    server = loop.run_until_complete(start_server)
+    print(f"[WS] WebSocket server listening on {ws_host}:{ws_port}")
+
+    # Run broadcast loop forever
+    try:
+        loop.run_until_complete(broadcast_loop(tbm, connected_clients))
+    finally:
+        server.close()
+        loop.run_until_complete(server.wait_closed())
+        loop.close()
+
+
+def main():
+    ###
+    Main entry point. Creates the TBM object, then starts:
+      1) TCP server (in one thread)
+      2) WebSocket server (in another thread)
+
+    Both share the same TBM instance.
+    ###
+    tbm = TBM()
+
+    # Thread for the TCP server that talks to the ESP
+    tcp_thread = threading.Thread(
+        target=start_tcp_server,
+        args=(tbm,),  # pass our shared TBM
+        daemon=True
+    )
+
+    # Thread for the WebSocket server that talks to React/Next.js clients
+    ws_thread = threading.Thread(
+        target=start_websocket_server,
+        args=(tbm,),
+        daemon=True
+    )
+
+    tcp_thread.start()
+    ws_thread.start()
+
+    # Keep the main thread alive
+    # You could do other tasks here or just wait for threads to exit.
+    tcp_thread.join()
+    ws_thread.join()
+
+
+if __name__ == "__main__":
+    main()
+"""
 # import socket
 #
 #

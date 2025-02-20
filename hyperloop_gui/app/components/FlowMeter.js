@@ -1,11 +1,12 @@
 import React from "react";
 import styled from "styled-components";
+import { useEffect, useState } from "react";
 
 const Container = styled.div`
   background: #1C1C1C;
   padding: 20px;
   width: 100%;
-  max-width: 1300px;
+  max-width: 600px;
 `;
 
 const GaugeContainer = styled.div`
@@ -20,20 +21,19 @@ const RedBackground = styled.div`
   bottom: 0;
   background: #FF4F4F;
   opacity: 0.3;
-  transition: all 0.1s ease-in-out;
+  transition: right 0.1s ease-in-out;
   pointer-events: none;
   z-index: 0;
-
   ${props => {
-    if (props.flowRate < 75) {
+    if (props.value < 40) {
       return `
-        left: ${(props.flowRate / 230 * 100)}%;
-        right: ${100 - (75 / 230 * 100)}%;
+        left: ${(props.value / 250 * 100)}%;
+        right: ${100 - (40 / 250 * 100)}%;
       `;
-    } else if (props.flowRate > 115) {
+    } else if (props.value > 200) {
       return `
-        left: ${115 / 230 * 100}%;
-        right: ${100 - (props.flowRate / 230 * 100)}%;
+        left: ${200 / 250 * 100}%;
+        right: ${100 - (props.value / 250 * 100)}%;
       `;
     }
   }}
@@ -54,18 +54,22 @@ const GridLines = styled.div`
   right: 0;
   bottom: 0;
   display: grid;
-  grid-template-columns: repeat(46, 1fr);
+  grid-template-columns: repeat(50, 1fr);
 
   div {
-    border-right: 1px dashed rgba(255, 255, 255);
+    border-right: 1px dashed rgba(255, 255, 255, 0.1);
     height: 100%;
+
+    &:nth-child(5n):not(:nth-child(40)) {
+      border-right: 1px solid #ffffff;
+    }
   }
 `;
 
 const Marker = styled.div`
   position: absolute;
   top: -55px;
-  left: ${props => (props.position / 230) * 100}%;
+  left: ${props => (props.position / 250) * 100}%;
   transform: translateX(-50%);
   transition: left 0.1s ease-in-out;
   display: flex;
@@ -75,7 +79,7 @@ const Marker = styled.div`
   
   &::before {
     content: '${props => props.position}';
-    color: ${props => (props.position < 75 || props.position > 115) ? '#FF4F4F' : '#00ff00'};
+    color: ${props => props.isStale ? '#9F9F9F' : (props.position > 200 || props.position < 40) ? '#FF4F4F' : '#00ff00'};
     display: block;
     margin-bottom: 10px;
     font-size: 20px;
@@ -92,7 +96,7 @@ const Marker = styled.div`
     display: block;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 25px solid ${props => (props.position < 75 || props.position > 115) ? '#FF4F4F' : '#00ff00'};
+    border-top: 25px solid ${props => props.isStale ? '#9F9F9F' : (props.position > 200 || props.position < 40) ? '#FF4F4F' : '#00ff00'};
     position: absolute;
     top: 25px;
     transition: border-top-color 0.1s ease-in-out;
@@ -104,7 +108,7 @@ const ScaleMarkers = styled.div`
   width: 100%;
   height: 100%;
   top: -15px;
-  z-index: 1;
+  bottom: 0;
   
   div {
     position: absolute;
@@ -112,30 +116,22 @@ const ScaleMarkers = styled.div`
     background: #00ff00;
     height: calc(100% + 15px);
     
-    &:nth-child(1) {
-      left: ${75 / 230 * 100}%;
-      &::before {
-        content: '75';
-        position: absolute;
-        top: -25px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: #00ff00;
-        font-size: 14px;
-      }
+    &::before {
+      content: attr(data-value);
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #00ff00;
+      font-size: 14px;
     }
     
-    &:nth-child(2) {
-      left: ${115 / 230 * 100}%;
-      &::before {
-        content: '115';
-        position: absolute;
-        top: -25px;
-        left: 50%;
-        transform: translateX(-50%);
-        color: #00ff00;
-        font-size: 14px;
-      }
+    &:first-child {
+      left: 16%;
+    }
+    
+    &:last-child {
+      left: 80%;
     }
   }
 `;
@@ -158,8 +154,13 @@ const ScaleNumbers = styled.div`
 const Title = styled.div`
   color: white;
   font-size: 16px;
-  margin-top: 10px;
-  margin-botton: 60px;
+  margin-bottom: 60px;
+`;
+const StatusMessage = styled.div`
+  color: #FFFFFF;
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
 `;
 
 const Slider = styled.input`
@@ -190,43 +191,54 @@ const Slider = styled.input`
   }
 `;
 
-const WaterFlowGauge = ({ direction, value, onChange }) => {
+const FlowMeter = ({ value, onChange, machineState }) => {
+  const [isStale, setIsStale] = useState(true);
+
+  useEffect(() => {
+    setIsStale(machineState !== "running");
+    console.log("machine state: " + machineState);
+  }, [machineState]);
+
   return (
     <Container>
-      <Title>Water flow rate {direction} status (L/min)</Title>
+      <Title>Pump Flow Rate</Title>
       <GaugeContainer>
         <GaugeScale>
           <GridLines>
-            {[...Array(46)].map((_, i) => (
+            {[...Array(50)].map((_, i) => (
               <div key={i} />
             ))}
           </GridLines>
-          {(value < 75 || value > 115) && 
-            <RedBackground flowRate={value} />
+          {(value < 40 || value > 200) && 
+            <RedBackground value={value} />
           }
           <ScaleMarkers>
-            <div />
-            <div />
+            <div data-value="40" />
+            <div data-value="200" />
           </ScaleMarkers>
-          <Marker position={value} />
+          <Marker position={value} isStale={isStale}/>
         </GaugeScale>
         <ScaleNumbers>
-          {[0, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200, 220, 240].map((num) => (
+          {[0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250].map((num) => (
             <span
               key={num}
               style={{
-                left: `${(num / 230) * 100}%`
+                left: num === 0 ? '0%' : 
+                  num === 250 ? '100%' : 
+                  `${(num / 250) * 100}%`,
+                transform: num === 50 ? 'translateX(-50%)' : 'translateX(-50%)'
               }}
             >
-              {num === 230 ? `${num}L/min` : num}
+              {num}
             </span>
           ))}
         </ScaleNumbers>
       </GaugeContainer>
+      <StatusMessage>Status: {isStale?  "Stale" : "Active"}</StatusMessage>
       <Slider
         type="range"
         min="0"
-        max="230"
+        max="250"
         step="0.1"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
@@ -236,4 +248,4 @@ const WaterFlowGauge = ({ direction, value, onChange }) => {
   );
 };
 
-export default WaterFlowGauge;
+export default FlowMeter;
