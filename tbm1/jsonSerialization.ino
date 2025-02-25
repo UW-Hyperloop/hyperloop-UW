@@ -35,12 +35,16 @@ String constructJsonPayload() {
   motorTempObj["timestamp"] = systemData.motor_temp.timestamp;
 
   // Repeat pattern for other sensors:
-  JsonObject flowTempObj = doc.createNestedObject("flow_temp");
-  flowTempObj["active"]    = systemData.flow_temp.active;
-  flowTempObj["value"]     = systemData.flow_temp.value;
-  flowTempObj["timestamp"] = systemData.flow_temp.timestamp;
+  JsonObject pumpTempObj = doc.createNestedObject("pump_temp");
+  pumpTempObj["active"]    = systemData.pump_temp.active;
+  pumpTempObj["value"]     = systemData.pump_temp.value;
+  pumpTempObj["timestamp"] = systemData.pump_temp.timestamp;
 
   // ... flow_in, flow_out, motor_power, pump_power, etc.
+  JsonObject gasSensorObj = doc.createNestedObject("gas_sensor"); 
+  gasSensorObj["active"] = systemData.gas_sensor.active; 
+  gasSensorObj["value"] = systemData.gas_sensor.value; 
+  gasSensorObj["timestamp"] = systemData.gas_sensor.timestamp; 
 
   // Done, serialize
   String output;
