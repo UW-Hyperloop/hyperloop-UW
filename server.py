@@ -11,23 +11,24 @@ HOST = '0.0.0.0'  # Listen on all interfaces
 PORT = 12346
 
 START_ID = 0x32
-STOP_ID  = 0x33
+STOP_ID = 0x33
 
 KEY_SIGNAL = False
-CHAR       = None
+CHAR = None
 
 # We use 'esp_sending_json' (True/False) to know whether the ESP is currently
 # sending JSON data. We'll set it to True as soon as any valid JSON is received,
 # and set it to False if the ESP stops sending data for a while.
 esp_sending_json = False
+estop_flag = False
 
 # Flags that instruct the main loop to keep sending start/stop messages.
 send_start_flag = False
-send_stop_flag  = False
+send_stop_flag = False
 
 # We'll keep a timestamp of when we last got any JSON data.
 last_json_time = 0
-JSON_TIMEOUT   = 3.0  # seconds - if needed to consider the ESP as "stopped"
+JSON_TIMEOUT = 3.0  # seconds - if needed to consider the ESP as "stopped"
 
 # We will store the client socket globally once connected.
 client_socket = None
@@ -62,7 +63,7 @@ def listen_for_keys():
 # Server Setup
 ###################################
 def start_server():
-    global client_socket, send_start_flag, send_stop_flag
+    global client_socket, send_start_flag, send_stop_flag, estop_flag
     global esp_sending_json, last_json_time
     global KEY_SIGNAL, CHAR
 
@@ -85,16 +86,18 @@ def start_server():
 
     # Main server loop: handle sending & receiving
     while True:
+        if estop_flag:
+            print("server in estop")
         # 1) Check if user pressed a key (global KEY_SIGNAL)
-        if KEY_SIGNAL:
+        if KEY_SIGNAL and not estop_flag:
             # We'll check CHAR to see if it was 's' or 't'
             if CHAR == 's':
                 print("[SERVER] Start key pressed. Begin sending START msg.")
                 send_start_flag = True
-                send_stop_flag  = False  # Cancel any stop actions
+                send_stop_flag = False  # Cancel any stop actions
             elif CHAR == 't':
                 print("[SERVER] Stop key pressed. Begin sending STOP msg.")
-                send_stop_flag  = True
+                send_stop_flag = True
                 send_start_flag = False
             # Reset KEY_SIGNAL so we only process once per press
             KEY_SIGNAL = False
@@ -142,6 +145,7 @@ def start_server():
             if received_data.startswith(b'\x02') and received_data.endswith(b'\x03'):
                 # Extract the inner payload
                 payload = received_data[1:-1].strip()  # remove start 0x02 and end 0x03
+                estop_flag = False
                 # We expect the first byte might be a "TBM_..." code.
                 # If it's TBM_DATA (0x35) or TBM_INIT (0x31), there's JSON after that.
                 if len(payload) > 1:
@@ -151,7 +155,7 @@ def start_server():
                     # Attempt to parse as JSON
                     # Normally you'd look for '{' and '}' but let's do a quick parse:
                     json_start = json_raw.find('{')
-                    json_end   = json_raw.rfind('}')
+                    json_end = json_raw.rfind('}')
                     if json_start != -1 and json_end != -1:
                         json_str = json_raw[json_start:json_end+1]
                         try:
@@ -172,7 +176,13 @@ def start_server():
                     else:
                         print("[SERVER] Could not find valid JSON in payload:", json_raw)
                 else:
-                    print("[SERVER] Message with no meaningful payload:", payload)
+                    msg_id = payload[0]
+                    if msg_id == 0x34:
+                        estop_flag = True
+                    elif msg_id == 0x32:
+                        estop_flag = False
+                    else:
+                        print("[SERVER] Message with no meaningful payload:", payload)
             else:
                 # Not a framed message or doesn't match your expected format
                 print("[SERVER] Non-JSON or unframed data:", received_data)
@@ -189,7 +199,7 @@ def start_server():
                         send_stop_flag = False
                         print("[SERVER] Stopped receiving JSON. STOP cycle complete.")
                 else:
-                    print("You did an estop didn't you")
+                    # print("its an estop or error. no msg coming back")
                     esp_sending_json = False
 
 
