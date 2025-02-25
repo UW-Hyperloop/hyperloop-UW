@@ -1,5 +1,4 @@
 #include <tbm.h>
-
 using namespace std;
 
 // ---------------------------------------------------------
@@ -35,20 +34,38 @@ String constructJsonPayload() {
   motorTempObj["timestamp"] = systemData.motor_temp.timestamp;
 
   // Repeat pattern for other sensors:
-  JsonObject flowTempObj = doc["flow_temp"].to<JsonObject>();
-  flowTempObj["active"]    = systemData.flow_temp.active;
-  flowTempObj["value"]     = systemData.flow_temp.value;
-  flowTempObj["timestamp"] = systemData.flow_temp.timestamp;
+  JsonObject pumpTempObj = doc["pump_temp"].to<JsonObject>();
+  pumpTempObj["active"]    = systemData.pump_temp.active;
+  pumpTempObj["value"]     = systemData.pump_temp.value;
+  pumpTempObj["timestamp"] = systemData.pump_temp.timestamp;
 
-  // JsonObject estopObj = doc["estop"].to<JsonObject>();
-  // estopObj["active"]    = systemData.estop_button.active;
-  // estopObj["value"]     = systemData.estop_button.value;
-  // estopObj["timestamp"] = systemData.estop_button.timestamp;
- 
   // ... flow_in, flow_out, motor_power, pump_power, etc.
+  JsonObject gasSensorObj = doc["gas_sensor"].to<JsonObject>();
+  gasSensorObj["active"] = systemData.gas_sensor.active; 
+  gasSensorObj["value"] = systemData.gas_sensor.value; 
+  gasSensorObj["timestamp"] = systemData.gas_sensor.timestamp; 
 
   // Done, serialize
   String output;
   serializeJson(doc, output);
   return output;
+}
+
+// ---------------------------------------------------------
+//  Example send function (currently just prints to Serial)
+// ---------------------------------------------------------
+void sendJsonPayload(const String &payload) {
+  Serial.println(payload);
+}
+
+// ---------------------------------------------------------
+//  JSON_loop: read the constructed JSON and send it out
+// ---------------------------------------------------------
+void JSON_loop() {
+  // Typically you'd do readSensors() & updateSystemState() 
+  // in your main loop or state loop. 
+  // But if you want to handle them here, you can — be consistent.
+
+  String payload = constructJsonPayload();
+  sendJsonPayload(payload);
 }

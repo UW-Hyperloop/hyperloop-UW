@@ -97,21 +97,20 @@ uint8_t* tbm_data() {
   return msg;
 }
 
-uint8_t* tbm_error() {
-  uint8_t* msg = new uint8_t[MSG_SIZE];
+uint8_t* tbm_estop() {
+  uint8_t* msg = new uint8_t[3];
   msg[0] = 0x02;
-  msg[514] = 0x03;
+  msg[2] = 0x03;
   msg[1] = TBM_ERROR;
-  String json = constructJsonPayload();
-  Serial.println(json);
-  
-  for (int i = 2; i < MSG_SIZE - 1; i++) {
-    if ((i-2) < json.length()) {
-      msg[i] = static_cast<uint8_t>(json[i - 2]); // Convert char to ASCII and store in msg
-    } else {
-      msg[i] = 0x00;
-    }
-  }
+
+  return msg;
+}
+
+uint8_t* tbm_estop_start() {
+  uint8_t* msg = new uint8_t[3];
+  msg[0] = 0x02;
+  msg[2] = 0x03;
+  msg[1] = TBM_START;
 
   return msg;
 }

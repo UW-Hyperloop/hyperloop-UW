@@ -19,4 +19,5 @@ uint8_t* tbm_init();
 void tbm_start_stop();
 uint8_t* tbm_error();
 uint8_t* tbm_data();
-uint8_t* tbm_error();
+uint8_t* tbm_estop();
+uint8_t* tbm_estop_start();

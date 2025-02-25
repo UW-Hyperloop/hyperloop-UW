@@ -20,8 +20,10 @@ struct sys_json {
   Sensor       flow_out;
   Sensor       motor_power;
   Sensor       pump_power;
+  Sensor       pump_temp;
   Sensor       bentonite_power;
   Sensor       estop_button;
+  Sensor       gas_sensor; 
   unsigned long global_time;
 };
 

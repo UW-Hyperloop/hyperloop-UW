@@ -5,7 +5,7 @@
 //  Setup for state machine
 // ---------------------------------------------------------
 void state_setup() {
-  Serial.println("state_setup: Entering CONFIG");
+  // Serial.println("state_setup: Entering CONFIG");
   systemData.state = STATE_CONFIG;
 }
 
@@ -32,7 +32,7 @@ void stoppingTBM() {
 void state_loop() {
   switch(systemData.state) {
     case STATE_CONFIG:
-      Serial.println("STATE_CONFIG");
+      // Serial.println("STATE_CONFIG");
       // systemData.state = STATE_RUNNING;
       break;
 
@@ -40,6 +40,9 @@ void state_loop() {
       if (systemData.motor_temp.value >= maxTemp || systemData.estop_button.value == 1) {
         stoppingTBM(); 
         systemData.state = STATE_STOP;
+        Serial.println("state running is stopped");
+        Serial.println(systemData.motor_temp.value);
+        Serial.println(systemData.estop_button.value);
         break;
       } 
       digitalWrite(POWCTRL_PIN, HIGH);
