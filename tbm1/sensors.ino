@@ -143,8 +143,8 @@ void readSensors() {
   float volt_pump       = get_voltage(raw_pump);
   float pumpTempC       = get_temperature();
 
-  systemData.flow_temp.value      = (int)pumpTempC;
-  systemData.flow_temp.timestamp  = millis();
+  // systemData.flow_temp.value      = (int)pumpTempC;
+  // systemData.flow_temp.timestamp  = millis();
 
   // 3. Flow in
   //int   raw_flowIn      = analogRead(FLOW_IN_PIN);
@@ -162,24 +162,24 @@ void readSensors() {
   systemData.flow_out.value       = (int)flowRateOut;
   systemData.flow_out.timestamp   = millis();
 
-  // 5. Motor power sense (digital)
-  int motorPow = digitalRead(MOTORSENSE_PIN);
-  systemData.motor_power.value    = motorPow;
-  systemData.motor_power.timestamp= millis();
-
-  // 6. Pump power sense (digital)
+  // 5. Pump temp sense (digital)
   int pumpPow = digitalRead(PUMPSENSE_PIN);
-  systemData.pump_power.value     = pumpPow;
-  systemData.pump_power.timestamp = millis();
+  systemData.pump_temp.value     = pumpPow;
+  systemData.pump_temp.timestamp = millis();
 
-  // 7. Bentonite power sense (if no pin, set 0)
+  // 6. Bentonite power sense (if no pin, set 0)
   systemData.bentonite_power.value     = 0;
   systemData.bentonite_power.timestamp = millis();
 
-  // 8. E-stop sense
+  // 7. E-stop sense
   int eStopVal = digitalRead(ESTOPSENSE_PIN);
   systemData.estop_button.value        = eStopVal;
   systemData.estop_button.timestamp    = millis();
+
+  // 8. Gas sense 
+  // int gasSense = digitalRead(// gas sensor pin here)
+  // systemData.gas_sensor.value          = 
+  // systemData.gas_sensor.timestamp      = millis(); 
 
   // 9. Update global_time
   systemData.global_time = millis();
