@@ -74,13 +74,12 @@ struct Sensor {
 struct sys_json {
   TBMState     state;
   Sensor       motor_temp;
-  Sensor       flow_temp;
   Sensor       flow_in;
   Sensor       flow_out;
-  Sensor       motor_power;
-  Sensor       pump_power;
+  Sensor       pump_temp;
   Sensor       bentonite_power;
   Sensor       estop_button;
+  Sensor       gas_sensor; 
   unsigned long global_time;
 };
 
@@ -129,3 +128,4 @@ inline const char* stateToString(TBMState s) {
 }
 
 #endif // TBM_H
+
