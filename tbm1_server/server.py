@@ -268,8 +268,16 @@ def start_server():
                     msg_id = payload[0]
                     if msg_id == 0x34:
                         estop_flag = True
+                        #send message to gui indicating estop
+                        estop_message = json.dumps({"state": "estop"})
+                        if ws_loop is not None:
+                            asyncio.run_coroutine_threadsafe(broadcast_to_gui(estop_message), ws_loop)
                     elif msg_id == 0x32:
                         estop_flag = False
+                        #send message to gui indicating switch lifted and back in cofig mode
+                        estop_message = json.dumps({"state": "config"})
+                        if ws_loop is not None:
+                            asyncio.run_coroutine_threadsafe(broadcast_to_gui(estop_message), ws_loop)
                     else:
                         print("[SERVER] Message with no meaningful payload:", payload)
             else:
@@ -315,4 +323,5 @@ if __name__ == "__main__":
     ws_thread.start()
 
     # 3) Start the server (main thread blocks here)
+
     start_server()

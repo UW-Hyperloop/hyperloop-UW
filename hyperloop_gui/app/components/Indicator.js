@@ -28,6 +28,7 @@ const StatusDot = styled.span`
       case 'running': return '#41F21D';
       case 'stopped': return '#797979';
       case 'error': return '#FF4F4F';
+      case 'estop': return '#FF4F4F';
       default: return '#797979';
     }
   }};
@@ -89,13 +90,14 @@ const Indicators = ({ machineState, startStopToggle }) => {
             {machineState === 'running' && 'Machine is running'}
             {machineState === 'stopped' && 'Machine is stopped'}
             {machineState === 'error' && 'Machine has error'}
+            {machineState === 'estop' && 'Machine Estopped'}
           </StatusText>
         </StatusIndicator>
         <Button 
           isRunning={isRunning} 
           onClick={handleMachineToggle}
         // this is for if we want to disable the button if there is an error
-          disabled={machineState === 'error'}
+          disabled={machineState === 'error' || machineState === 'estop'}
         //   disabled={isRunning && machineState === 'error'}
         >
           {isRunning ? 'Stop machine' : 'Start machine'}

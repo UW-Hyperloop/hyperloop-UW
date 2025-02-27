@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import WaterPumpGauge from "./components/WaterPump";
 import MotorTempGauge from "./components/MotorTemp";
 import styled from 'styled-components';
@@ -35,27 +35,25 @@ export default function Page() {
   const [waterFlowOutRate, setWaterFlowOutRate] = useState(96);
   const [waterPumpTemp, setWaterPumpTemp] = useState(20);
   const [machineState, setMachineState] = useState('config');
-
-  /*
+  const socketRef = useRef(null);
+  
   useEffect(() => {
     // Step 1: Connect to the WebSocket server
-    const socket = new WebSocket('ws://localhost:5000'); // Adjust URL if necessary
- 
+    const socket = new WebSocket('ws://localhost:8765'); // Adjust URL if necessary
+    socketRef.current = socket;
     // Step 2: Handle incoming WebSocket messages
     socket.onmessage = function (event) {
       console.log(event);
       const data = JSON.parse(event.data); // Parse the JSON data
-      const newMotorTemp = data.motor_temp.value;
+      if(data.state){
+        if(data.state === "estop"){
+          alert("Physcial estop pressed");
+        }
+        setMachineState(data.state);
+      }
+      const newMotorTemp = data.motor_temp?.value;
       if(newMotorTemp){
         setMotorTemp(Math.floor(newMotorTemp * 100) / 100);
-      }
-      const newCircuitTemp = data.circuit_temp.value;
-      if(newCircuitTemp){
-        setCircuitTemp(Math.floor(newCircuitTemp * 100) / 100);
-      }
-      const newFlow = data.flow.value;
-      if(newFlow){
-        setData(Math.floor(newFlow * 100) / 100);
       }
     };
  
@@ -69,17 +67,18 @@ export default function Page() {
       socket.close();
     };
   }, []);
-  */
+  
  
-  useEffect(() => {
-    if (motorTemp < 10 || motorTemp > 50 || waterFlowInRate < 40 || waterFlowInRate > 200) {
-      setMachineState('error');
-    }
-  }, [motorTemp, waterFlowInRate]);
 
   // sends certain commands to server
   const sendCommandToServer = (command) => {
-    // TODO: format and send command to server
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const message = JSON.stringify({ command });
+      socketRef.current.send(message);
+      console.log(" Sent command to server:", message);
+    } else {
+      console.warn(" WebSocket is not open. Cannot send:", command);
+    }
     console.log("sending command: " + command);
   };
 
