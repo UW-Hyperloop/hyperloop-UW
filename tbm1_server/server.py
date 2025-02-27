@@ -35,7 +35,7 @@ esp_sending_json = False
 send_start_flag = False
 send_stop_flag  = False
 # We'll send E-stop as a single message (once) when requested
-send_estop_flag  = False
+estop_flag = False
 
 # We'll keep a timestamp of when we last got any JSON data.
 last_json_time = 0
@@ -136,7 +136,7 @@ def start_websocket_server():
 # Server Setup
 ###################################
 def start_server():
-    global client_socket, send_start_flag, send_stop_flag, send_estop_flag
+    global client_socket, send_start_flag, send_stop_flag, estop_flag
     global esp_sending_json, last_json_time
     global KEY_SIGNAL, CHAR
 
@@ -159,9 +159,11 @@ def start_server():
 
     # Main server loop: handle sending & receiving
     while True:
+        if estop_flag:
+            print("we're in estop")
         #process commands from GUI if any
         try:
-            while True:
+            while not estop_flag:
                 cmd = commands_from_gui.get_nowait()
                 if cmd == "start":
                     send_start_flag = True
@@ -172,7 +174,7 @@ def start_server():
         except queue.Empty:
             pass
         # 1) Check if user pressed a key (global KEY_SIGNAL)
-        if KEY_SIGNAL:
+        if KEY_SIGNAL and not estop_flag:
             # We'll check CHAR to see if it was 's' or 't'
             if CHAR == 's':
                 print("[SERVER] Start key pressed. Begin sending START msg.")
@@ -230,6 +232,7 @@ def start_server():
                 payload = received_data[1:-1].strip()  # remove start 0x02 and end 0x03
                 # We expect the first byte might be a "TBM_..." code.
                 # If it's TBM_DATA (0x35) or TBM_INIT (0x31), there's JSON after that.
+                estop_flag = False
                 if len(payload) > 1:
                     msg_id  = payload[0]
                     json_raw = payload[1:].decode(errors='ignore').strip()
@@ -262,7 +265,21 @@ def start_server():
                     else:
                         print("[SERVER] Could not find valid JSON in payload:", json_raw)
                 else:
-                    print("[SERVER] Message with no meaningful payload:", payload)
+                    msg_id = payload[0]
+                    if msg_id == 0x34:
+                        estop_flag = True
+                        #send message to gui indicating estop
+                        estop_message = json.dumps({"state": "estop"})
+                        if ws_loop is not None:
+                            asyncio.run_coroutine_threadsafe(broadcast_to_gui(estop_message), ws_loop)
+                    elif msg_id == 0x32:
+                        estop_flag = False
+                        #send message to gui indicating switch lifted and back in cofig mode
+                        estop_message = json.dumps({"state": "config"})
+                        if ws_loop is not None:
+                            asyncio.run_coroutine_threadsafe(broadcast_to_gui(estop_message), ws_loop)
+                    else:
+                        print("[SERVER] Message with no meaningful payload:", payload)
             else:
                 # Not a framed message or doesn't match your expected format
                 print("[SERVER] Non-JSON or unframed data:", received_data)

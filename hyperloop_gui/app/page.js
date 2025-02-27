@@ -45,8 +45,11 @@ export default function Page() {
     socket.onmessage = function (event) {
       console.log(event);
       const data = JSON.parse(event.data); // Parse the JSON data
-      if(data.state && data.state === "running"){
-        setMachineState("running");
+      if(data.state){
+        if(data.state === "estop"){
+          alert("Physcial estop pressed");
+        }
+        setMachineState(data.state);
       }
       const newMotorTemp = data.motor_temp?.value;
       if(newMotorTemp){
@@ -66,11 +69,6 @@ export default function Page() {
   }, []);
   
  
-  useEffect(() => {
-    if (motorTemp < 10 || motorTemp > 50 || waterFlowInRate < 40 || waterFlowInRate > 200) {
-      setMachineState('error');
-    }
-  }, [motorTemp, waterFlowInRate]);
 
   // sends certain commands to server
   const sendCommandToServer = (command) => {
