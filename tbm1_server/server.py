@@ -1,8 +1,14 @@
+import queue
+import random
 import socket
 import json
 import threading
+
+import websockets
 from pynput import keyboard
 import time
+
+import asyncio
 
 ###################################
 # Constants / Global Variables
@@ -10,25 +16,31 @@ import time
 HOST = '0.0.0.0'  # Listen on all interfaces
 PORT = 12346
 
+# WebSocket server on separate port (e.g., 8765) for GUI
+WS_HOST = '0.0.0.0'
+WS_PORT = 8765
+
 START_ID = 0x32
-STOP_ID = 0x33
+STOP_ID  = 0x33
 
 KEY_SIGNAL = False
-CHAR = None
+CHAR       = None
 
 # We use 'esp_sending_json' (True/False) to know whether the ESP is currently
 # sending JSON data. We'll set it to True as soon as any valid JSON is received,
 # and set it to False if the ESP stops sending data for a while.
 esp_sending_json = False
-estop_flag = False
 
 # Flags that instruct the main loop to keep sending start/stop messages.
 send_start_flag = False
-send_stop_flag = False
+send_stop_flag  = False
+# We'll send E-stop as a single message (once) when requested
+estop_flag = False
 
 # We'll keep a timestamp of when we last got any JSON data.
 last_json_time = 0
-JSON_TIMEOUT = 3.0  # seconds - if needed to consider the ESP as "stopped"
+JSON_TIMEOUT   = 3.0  # seconds - if needed to consider the ESP as "stopped"
+commands_from_gui = queue.Queue()
 
 # We will store the client socket globally once connected.
 client_socket = None
@@ -60,6 +72,67 @@ def listen_for_keys():
         listener.join()
 
 ###################################
+# WebSocket Setup (for GUI)
+###################################
+connected_websockets = set()
+ws_loop = None
+
+
+async def ws_handler(websocket):
+    """
+    Handle incoming messages from a connected GUI WebSocket client.
+    Also add the client to a set so we can broadcast new data to it.
+    """
+    global send_start_flag, send_stop_flag
+    connected_websockets.add(websocket)
+    try:
+        async for message in websocket:
+            # Handle incoming messages
+            try:
+                data = json.loads(message)
+                cmd = data.get("command", "").lower()
+                if cmd == "tbm_start":
+                    print("[WEBSOCKET] TBM_start command received from GUI.")
+                    commands_from_gui.put("start")
+                elif cmd == "tbm_stop":
+                    print("[WEBSOCKET] TBM_stop command received from GUI.")
+                    send_stop_flag = True
+                    send_start_flag = False
+                else:
+                    print("[WEBSOCKET] Unknown command from GUI:", data)
+            except json.JSONDecodeError:
+                print("[WEBSOCKET] Received non-JSON message from GUI:", message)
+    except websockets.exceptions.ConnectionClosed:
+        pass
+    finally:
+        connected_websockets.remove(websocket)
+
+
+async def broadcast_to_gui(json_data: str):
+    """
+    Broadcast the given json string to all connected WebSocket clients.
+    """
+    if connected_websockets:
+        # Gather tasks to send concurrently
+        await asyncio.gather(*[ws.send(json_data) for ws in connected_websockets])
+
+def start_websocket_server():
+    """
+    Runs an asyncio event loop for the WebSocket server in its own thread.
+    """
+    global ws_loop
+    ws_loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(ws_loop)
+
+    async def server_main():
+        async with websockets.serve(ws_handler, WS_HOST, WS_PORT):
+            print(f"[WEBSOCKET] WebSocket server started on ws://{WS_HOST}:{WS_PORT}")
+            await asyncio.Future()  # Run forever
+
+    ws_loop.run_until_complete(server_main())
+    ws_loop.run_forever()
+
+###################################
 # Server Setup
 ###################################
 def start_server():
@@ -87,17 +160,29 @@ def start_server():
     # Main server loop: handle sending & receiving
     while True:
         if estop_flag:
-            print("server in estop")
+            print("we're in estop")
+        #process commands from GUI if any
+        try:
+            while not estop_flag:
+                cmd = commands_from_gui.get_nowait()
+                if cmd == "start":
+                    send_start_flag = True
+                    send_stop_flag  = False
+                elif cmd == "stop":
+                    send_stop_flag  = True
+                    send_start_flag = False
+        except queue.Empty:
+            pass
         # 1) Check if user pressed a key (global KEY_SIGNAL)
         if KEY_SIGNAL and not estop_flag:
             # We'll check CHAR to see if it was 's' or 't'
             if CHAR == 's':
                 print("[SERVER] Start key pressed. Begin sending START msg.")
                 send_start_flag = True
-                send_stop_flag = False  # Cancel any stop actions
+                send_stop_flag  = False  # Cancel any stop actions
             elif CHAR == 't':
                 print("[SERVER] Stop key pressed. Begin sending STOP msg.")
-                send_stop_flag = True
+                send_stop_flag  = True
                 send_start_flag = False
             # Reset KEY_SIGNAL so we only process once per press
             KEY_SIGNAL = False
@@ -145,9 +230,9 @@ def start_server():
             if received_data.startswith(b'\x02') and received_data.endswith(b'\x03'):
                 # Extract the inner payload
                 payload = received_data[1:-1].strip()  # remove start 0x02 and end 0x03
-                estop_flag = False
                 # We expect the first byte might be a "TBM_..." code.
                 # If it's TBM_DATA (0x35) or TBM_INIT (0x31), there's JSON after that.
+                estop_flag = False
                 if len(payload) > 1:
                     msg_id  = payload[0]
                     json_raw = payload[1:].decode(errors='ignore').strip()
@@ -168,8 +253,12 @@ def start_server():
                                 send_start_flag = False
 
                             # Print or store the JSON data
-                            print("[SERVER] Received JSON from ESP:")
-                            print(json.dumps(parsed, indent=2))
+                            # Broadcast actual ESP data to GUI
+                            if ws_loop is not None:
+                                asyncio.run_coroutine_threadsafe(
+                                    broadcast_to_gui(json.dumps(parsed)), ws_loop
+                                )
+                            print("[SERVER] Broadcasted ESP data to GUI:", json.dumps(parsed, indent=2))
 
                         except json.JSONDecodeError:
                             print("[SERVER] Received invalid JSON. Data:", json_str)
@@ -199,7 +288,7 @@ def start_server():
                         send_stop_flag = False
                         print("[SERVER] Stopped receiving JSON. STOP cycle complete.")
                 else:
-                    # print("its an estop or error. no msg coming back")
+                    print("its an estop or error. no msg coming back")
                     esp_sending_json = False
 
 
@@ -221,6 +310,9 @@ if __name__ == "__main__":
     # Thread to detect keystrokes
     keyboard_thread = threading.Thread(target=listen_for_keys, daemon=True)
     keyboard_thread.start()
+    # 2) Start the WebSocket server in a separate thread (for the GUI)
+    ws_thread = threading.Thread(target=start_websocket_server, daemon=True)
+    ws_thread.start()
 
-    # Start the server (main thread blocks here)
+    # 3) Start the server (main thread blocks here)
     start_server()
