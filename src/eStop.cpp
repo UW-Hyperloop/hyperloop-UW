@@ -24,9 +24,9 @@ void eStop_loop() {
         }
         uint8_t* msg = tbm_estop();
         CH9121.write(msg, 3);
-        Serial.flush();
+        CH9121.flush();
         delete[] msg;
-        Serial.flush();
+        CH9121.flush();
       }
       onflag = true;
       offlag = false;
@@ -51,9 +51,9 @@ void eStop_loop() {
         }
         uint8_t* msg = tbm_estop_start();
         CH9121.write(msg, 3);
-        Serial.flush();
+        CH9121.flush();
         delete[] msg;
-        Serial.flush();
+        CH9121.flush();
       }
 
       offlag = true;

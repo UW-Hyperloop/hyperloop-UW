@@ -25,7 +25,7 @@ void setup() {
   uint8_t* msg = tbm_init();
 
   CH9121.write(msg, MSG_SIZE);
-  Serial.flush();
+  CH9121.flush();
   delete[] msg;
   state_loop();
   eStop_loop();
@@ -54,7 +54,7 @@ void loop() {
     readSensors();
     uint8_t* msg = tbm_data();
     CH9121.write(msg, MSG_SIZE);
-    Serial.flush();
+    CH9121.flush();
     delete[] msg;
     delay(500);
   } else {

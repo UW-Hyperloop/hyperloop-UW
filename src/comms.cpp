@@ -51,7 +51,7 @@ void tbm_start_stop() {
     if (buffer[1] == TBM_START) {
       if (!digitalRead(ESTOPSENSE_PIN)) {
         Serial.println("estop activated. Reject start");
-        Serial.flush();
+        CH9121.flush();
         // send out as json as well if possible. separate logic chain for that :(
         return;
       }
