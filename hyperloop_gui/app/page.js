@@ -47,7 +47,7 @@ export default function Page() {
       const data = JSON.parse(event.data); // Parse the JSON data
       if(data.state){
         if(data.state === "estop"){
-          alert("Physcial estop pressed");
+          //alert("Physcial estop pressed");
         }
         setMachineState(data.state);
       }
@@ -64,7 +64,7 @@ export default function Page() {
  
     // Step 4: Clean up WebSocket connection on component unmount
     return () => {
-      socket.close();
+      //socket.close();
     };
   }, []);
   
@@ -92,7 +92,7 @@ export default function Page() {
     else if(machineState === 'running'){
       setMachineState('stopped');
       sendCommandToServer("TBM_stop");
-      alert("stopping and resetting machine")
+      //alert("stopping and resetting machine")
     }
   };
 
