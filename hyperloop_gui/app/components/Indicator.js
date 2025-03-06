@@ -97,7 +97,7 @@ const Indicators = ({ machineState, startStopToggle }) => {
           isRunning={isRunning} 
           onClick={handleMachineToggle}
         // this is for if we want to disable the button if there is an error
-          disabled={machineState === 'error' || machineState === 'estop'}
+          disabled={machineState === 'error' || machineState === 'estop' || machineState === 'stopped'}
         //   disabled={isRunning && machineState === 'error'}
         >
           {isRunning ? 'Stop machine' : 'Start machine'}

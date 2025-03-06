@@ -1,13 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import WaterPumpGauge from "./components/WaterPump";
+import PumpTempMeter from './components/PumpTemp';
 import MotorTempGauge from "./components/MotorTemp";
 import styled from 'styled-components';
-import WaterFlowGauge from "./components/WaterFlow";
 import StatusIndicators from "./components/Indicator";
 import ErrorMessages from "./components/ErrorMessages";
-import FlowMeter from './components/FlowMeter';
 
 const PageContainer = styled.div`
   background-color: #1C1C1C;
@@ -103,19 +101,17 @@ export default function Page() {
       setTimeout(() => {
         console.log("machine reset");
         setMachineState('config');
-      }, 3000);
+      }, 2000);
     }
   }, [machineState]);
   return (
     <PageContainer>
       <StatusIndicators machineState={machineState} startStopToggle={toggleStartStop}/>
       <RowOne>
-        <FlowMeter 
-          title={"Pump Flow Rate"}
+        <PumpTempMeter 
           value={waterFlowInRate} 
           onChange={setWaterFlowInRate}
           machineState={machineState}
-          max={250}
         />
         <MotorTempGauge 
           value={motorTemp} 
@@ -130,20 +126,7 @@ export default function Page() {
           { min: 85, max: 90, color: 'yellow' },  // Warning high
           { min: 90, max: 110, color: 'red' },     // Critical high
         ]} */}
-      </RowOne>
-      {/**
-      <WaterFlowGauge 
-        direction="IN" 
-        value={waterFlowInRate} 
-        onChange={setWaterFlowInRate}
-      />
-      <WaterFlowGauge 
-        direction="OUT" 
-        value={waterFlowOutRate} 
-        onChange={setWaterFlowOutRate}
-      />
-       */}
-      
+      </RowOne>      
       <ErrorMessages 
         motorTemp={motorTemp}
         waterFlowRate={waterFlowInRate}
