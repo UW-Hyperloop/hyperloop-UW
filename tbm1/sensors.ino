@@ -21,6 +21,7 @@ Set up pins in tbm.h
 */
 
 Adafruit_MAX31855 thermocouple(CLK, CS, DO); //initialize thermocouple object
+// define a new pin for chip select - two temp readings - refactor code above using SPI. 
 void sensorPinSetup() {
   Serial.begin(9600);
   // no longer reading from pin for temperature
