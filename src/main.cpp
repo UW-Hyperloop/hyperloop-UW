@@ -28,8 +28,8 @@ void setup() {
   CH9121.flush();
   delete[] msg;
   state_loop();
-  eStop_loop();
   tbm_start_stop();
+  eStop_loop();
   state_loop();
 }
 
@@ -38,17 +38,6 @@ void loop() {
   state_loop();
   tbm_start_stop();
   state_loop();
-  // Pass CH9121 -> Serial Monitor
-  // if (CH9121.available()) {
-  //   int b = CH9121.read();
-  //   Serial.write(b);
-  // }
- 
-  // // Pass Serial Monitor -> CH9121
-  // if (Serial.available()) {
-  //   int b = Serial.read();
-  //   CH9121.write(b);
-  // }
 
   if (systemData.state == STATE_RUNNING) {
     readSensors();
@@ -60,6 +49,7 @@ void loop() {
   } else {
     readSensors();
   }
+
   tbm_start_stop();
   state_loop();
   eStop_loop();
