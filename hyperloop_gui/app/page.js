@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import PumpTempMeter from './components/PumpTemp';
 import MotorTempGauge from "./components/MotorTemp";
 import styled from 'styled-components';
-import StatusIndicators from "./components/Indicator";
+import MachineOnOff from "./components/MachineOnOff";
 import ErrorMessages from "./components/ErrorMessages";
 
 const PageContainer = styled.div`
@@ -24,7 +24,7 @@ const RowOne = styled.div`
   justify-content: center;
   align-items: center;
   width: 100%;
-  gap: 100px;
+  gap: 60px;
 `;
 
 export default function Page() {
@@ -106,7 +106,7 @@ export default function Page() {
   }, [machineState]);
   return (
     <PageContainer>
-      <StatusIndicators machineState={machineState} startStopToggle={toggleStartStop}/>
+      <MachineOnOff machineState={machineState} startStopToggle={toggleStartStop}/>
       <RowOne>
         <PumpTempMeter 
           value={waterFlowInRate} 

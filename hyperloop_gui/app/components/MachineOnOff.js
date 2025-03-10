@@ -3,13 +3,14 @@
 import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 
-const TopSection = styled.div`
-  width: 100%;
+const Container = styled.div`
+  margin-right: auto;
+  width: 40%;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 `;
 
 const StatusIndicator = styled.div`
@@ -71,7 +72,7 @@ const Button = styled.button`
   }
 `;
 
-const Indicators = ({ machineState, startStopToggle }) => {
+const MachineOnOff = ({ machineState, startStopToggle }) => {
     const [isRunning, setIsRunning] = useState(machineState === 'running');
   
     const handleMachineToggle = async () => {
@@ -82,7 +83,7 @@ const Indicators = ({ machineState, startStopToggle }) => {
       setIsRunning(machineState === 'running');
     }, [machineState]);
     return (
-      <TopSection>
+      <Container>
         <StatusIndicator>
           <StatusDot status={machineState} />
           <StatusText>
@@ -102,8 +103,8 @@ const Indicators = ({ machineState, startStopToggle }) => {
         >
           {isRunning ? 'Stop machine' : 'Start machine'}
         </Button>
-      </TopSection>
+      </Container>
     );
   };
 
-  export default Indicators;
+  export default MachineOnOff;
