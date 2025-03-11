@@ -17,6 +17,7 @@ void initSystemData() {
   systemData.pump_power    = { true, 0, 0 };
   systemData.bentonite_power  = { true, 0, 0 };
   systemData.estop_button  = { true, 0, 0 };
+  systemData.gas_sensor = { true, 0, 0}; 
 }
 
 // ---------------------------------------------------------
@@ -41,6 +42,10 @@ String constructJsonPayload() {
   flowTempObj["timestamp"] = systemData.flow_temp.timestamp;
 
   // ... flow_in, flow_out, motor_power, pump_power, etc.
+  JsonObject gasSensorObj = doc.createNestedObject("gas_sensor"); 
+  gasSensorObj["active"] = systemData.gas_sensor.active; 
+  gasSensorObj["value"]     = systemData.gas_sensor.value;
+  gasSensorObj["timestamp"] = systemData.gas_sensor.timestamp;
 
   // Done, serialize
   String output;
