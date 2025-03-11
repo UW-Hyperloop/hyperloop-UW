@@ -129,6 +129,14 @@ float get_flowRate(float voltage){
   return 3.125 * (current_mA - 4);
 }
 
+// the values for this are not the ones we shd be using. - will figure out values soon 
+float get_gasConcentration(int value) { 
+  const float A = 60.0; 
+  const float V_REF = 3.3; 
+  const float B = -1.0; 
+  float voltage = (value / 4095.0) * V_REF; 
+  return (A * pow((voltage / V_REF), B) / 100);
+} 
 // ---------------------------------------------------------
 //  Read all sensors -> update systemData fields
 // ---------------------------------------------------------
@@ -181,6 +189,11 @@ void readSensors() {
   int eStopVal = digitalRead(ESTOPSENSE_PIN);
   systemData.estop_button.value        = eStopVal;
   systemData.estop_button.timestamp    = millis();
+
+  // 9. Gas sense 
+  int gasValue = analogRead(GASSENSE_PIN); 
+  systemData.gas_sensor.value = get_gasConcentration(gasValue); 
+  systemData.gas_sensor.timestamp = millis(); 
 
   // 9. Update global_time
   systemData.global_time = millis();
