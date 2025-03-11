@@ -17,6 +17,7 @@
 #define ESTOPSENSE_PIN 33
 #define MOTOR_TEMP_PIN 34
 #define PUMP_TEMP_PIN 35
+#define GASSENSE_PIN 32
 //#define FLOW_IN_PIN 12
 //#define FLOW_OUT_PIN 13
 // SPI for thermocouple
@@ -81,6 +82,7 @@ struct sys_json {
   Sensor       pump_power;
   Sensor       bentonite_power;
   Sensor       estop_button;
+  Sensor       gas_sensor
   unsigned long global_time;
 };
 
