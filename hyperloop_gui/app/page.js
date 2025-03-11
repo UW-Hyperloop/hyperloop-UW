@@ -7,6 +7,7 @@ import GasSensor from './components/GasSensor';
 import styled from 'styled-components';
 import MachineOnOff from "./components/MachineOnOff";
 import ErrorMessages from "./components/ErrorMessages";
+import BentoniteOnOff from './components/BentoniteOnOff';
 
 const PageContainer = styled.div`
   background-color: #1C1C1C;
@@ -39,7 +40,7 @@ export default function Page() {
   const [pumpTemp, setPumpTemp] = useState(20);
   const [gasPPM, setGasPPM] = useState(23);
   const [machineState, setMachineState] = useState('config');
-  const [bentoniteOn, setBentoniteOn] = useState(false);
+  const [bentoniteState, setBentoniteState] = useState('off');
   const [pumpOn, setPumpOn] = useState(false);
   const socketRef = useRef(null);
   
@@ -52,10 +53,10 @@ export default function Page() {
       console.log(event);
       const data = JSON.parse(event.data); // Parse the JSON data
       if(data.state){
-        if(data.state === "estop"){
-          //alert("Physcial estop pressed");
-        }
         setMachineState(data.state);
+      }
+      if(data.bentonite_state){
+        setBentoniteState(data.bentonite_state);
       }
       const newMotorTemp = data.motor_temp?.value;
       if(newMotorTemp){
@@ -98,28 +99,24 @@ export default function Page() {
     else if(machineState === 'running'){
       setMachineState('stopped');
       sendCommandToServer("TBM_stop");
-      //alert("stopping and resetting machine")
+      if(bentoniteState === 'on'){
+        setBentoniteState('off');
+        sendCommandToServer("TBM_bentonite_stop");
+      }
     }
   };
 
   const toggleBentonite = () => {
-    if(bentoniteOn){
-      sendCommandToServer("TBM_bentonite_start");
+    if(machineState === 'running'){
+      if(bentoniteState === 'off'){
+        sendCommandToServer("TBM_bentonite_start");
+        setBentoniteState('on');
+      }
+      else {
+        sendCommandToServer("TBM_bentonite_stop");
+        setBentoniteState('off');
+      }
     }
-    else {
-      sendCommandToServer("TBM_bentonite_stop");
-    }
-    setBentoniteOn(!bentoniteOn);
-  }
-
-  const togglePump = () => {
-    if(pumpOn){
-      sendCommandToServer("TBM_pump_start");
-    }
-    else {
-      sendCommandToServer("TBM_pump_stop");
-    }
-    setBentoniteOn(!pumpOn);
   }
 
   // mock reset machine 
@@ -136,17 +133,17 @@ export default function Page() {
     <PageContainer>
       <Buttons>
         <MachineOnOff machineState={machineState} startStopToggle={toggleStartStop}/>
-        <MachineOnOff machineState={machineState} startStopToggle={toggleStartStop}/>
+        <BentoniteOnOff bentoniteState={bentoniteState} machineState={machineState} startStopToggle={toggleBentonite}/>
       </Buttons>
       <Row>
-        <PumpTempMeter 
-          value={pumpTemp} 
-          onChange={setPumpTemp}
-          machineState={machineState}
-        />
         <MotorTempGauge 
           value={motorTemp} 
           onChange={setMotorTemp} 
+          machineState={machineState}
+        />
+        <GasSensor 
+          value={gasPPM} 
+          onChange={setGasPPM} 
           machineState={machineState}
         />
         {/**
@@ -158,13 +155,6 @@ export default function Page() {
           { min: 90, max: 110, color: 'red' },     // Critical high
         ]} */}
       </Row>    
-      <Row>
-        <GasSensor 
-          value={gasPPM} 
-          onChange={setGasPPM} 
-          machineState={machineState}
-        />
-      </Row>  
     </PageContainer>
   );
 }

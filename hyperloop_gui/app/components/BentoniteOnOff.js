@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 const Container = styled.div`
   margin-right: auto;
-  width: 400px;
+  width: 500px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -25,11 +25,8 @@ const StatusDot = styled.span`
   border-radius: 50%;
   background-color: ${props => {
     switch (props.status) {
-      case 'config': return '#FFDC2E';
-      case 'running': return '#41F21D';
-      case 'stopped': return '#797979';
-      case 'error': return '#FF4F4F';
-      case 'estop': return '#FF4F4F';
+      case 'on': return '#41F21D';
+      case 'off': return '#FF4F4F';
       default: return '#797979';
     }
   }};
@@ -72,39 +69,39 @@ const Button = styled.button`
   }
 `;
 
-const MachineOnOff = ({ machineState, startStopToggle }) => {
-    const [isRunning, setIsRunning] = useState(machineState === 'running');
+const BentoniteOnOff = ({ bentoniteState, machineState, startStopToggle }) => {
+    const [isRunning, setIsRunning] = useState(bentoniteState === 'on');
   
     const handleMachineToggle = async () => {
       startStopToggle();
     };
   
     useEffect(()=>{
-      setIsRunning(machineState === 'running');
-    }, [machineState]);
+      setIsRunning(bentoniteState === 'on');
+    }, [bentoniteState]);
     return (
       <Container>
         <StatusIndicator>
-          <StatusDot status={machineState} />
+          <StatusDot status={bentoniteState} />
           <StatusText>
-            {machineState === 'config' && 'Machine is ready'}
-            {machineState === 'running' && 'Machine is running'}
-            {machineState === 'stopped' && 'Machine is stopped'}
-            {machineState === 'error' && 'Machine has error'}
-            {machineState === 'estop' && 'Machine Estopped'}
+            {bentoniteState === 'off' && 'Bentonite pump is stopped'}
+            {bentoniteState === 'on' && 'Bentonite pump is running'}
           </StatusText>
         </StatusIndicator>
         <Button 
           isRunning={isRunning} 
           onClick={handleMachineToggle}
         // this is for if we want to disable the button if there is an error
-          disabled={machineState === 'error' || machineState === 'estop' || machineState === 'stopped'}
+          disabled={machineState === 'error' || 
+                    machineState === 'estop' || 
+                    machineState === 'stopped' || 
+                    machineState === 'config'}
         //   disabled={isRunning && machineState === 'error'}
         >
-          {isRunning ? 'Stop machine' : 'Start machine'}
+          {isRunning ? 'Stop Bentonite' : 'Start Bentonite'}
         </Button>
       </Container>
     );
   };
 
-  export default MachineOnOff;
+  export default BentoniteOnOff;
