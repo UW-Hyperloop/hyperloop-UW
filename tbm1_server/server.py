@@ -296,8 +296,20 @@ def start_server():
                         send_stop_flag = False
                         print("[SERVER] Stopped receiving JSON. STOP cycle complete.")
                 else:
-                    print("its an estop or error. no msg coming back")
                     esp_sending_json = False
+            else:
+                if not send_stop_flag:
+                    time_since_json = time.time() - last_json_time
+                    if time_since_json > 10.0:
+                        fail_msg = json.dumps({"state": "power_failure"})
+                        if ws_loop is not None:
+                            asyncio.run_coroutine_threadsafe(broadcast_to_gui(fail_msg), ws_loop)
+                        print("power failure")
+                    else:
+                        fail_msg = json.dumps({"state": "comms_failure"})
+                        if ws_loop is not None:
+                            asyncio.run_coroutine_threadsafe(broadcast_to_gui(fail_msg), ws_loop)
+                        print("comms failure")
 
 
         # Optional: If you want to detect “if JSON stops unexpectedly, resume sending start”:
