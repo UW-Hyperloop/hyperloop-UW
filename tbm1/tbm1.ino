@@ -1,10 +1,11 @@
 #include <Arduino.h>
 #include "tbm.h"
-// #include "sensors.ino"
-// #include "comms.ino"
-// #include "state.ino"
-// #include "eStop.ino"
-// #include "jsonSerialization.ino"
+#include "sensors.ino"
+#include "comms.ino"
+#include "state.ino"
+#include "eStop.ino"
+#include "jsonSerialization.ino"
+#include "receiving_ESP_comms.ino"
 
 sys_json systemData;       
 
@@ -31,11 +32,14 @@ void setup() {
 
 
   state_setup();
+  receivingESP_setup()
+
 }
 
 void loop(){
 
   eStop_loop();
+  receivingESP_loop()
 
 
   readSensors();

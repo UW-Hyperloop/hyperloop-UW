@@ -137,6 +137,8 @@ float get_gasConcentration(int value) {
   float voltage = (value / 4095.0) * V_REF; 
   return (A * pow((voltage / V_REF), B) / 100);
 } 
+
+
 // ---------------------------------------------------------
 //  Read all sensors -> update systemData fields
 // ---------------------------------------------------------
