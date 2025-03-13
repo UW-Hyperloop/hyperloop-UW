@@ -62,6 +62,10 @@ export default function Page() {
       if(newMotorTemp){
         setMotorTemp(Math.floor(newMotorTemp * 100) / 100);
       }
+      const newGasPPM = data.gas_ppm?.value;
+      if(newGasPPM){
+        setGasPPM(newGasPPM);
+      }
     };
  
     // Step 3: Handle WebSocket connection close
