@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include "tbm.h"
+#include <HardwareSerial.h>
 
 void setup() {
     Serial.begin(9600);    // Debugging
