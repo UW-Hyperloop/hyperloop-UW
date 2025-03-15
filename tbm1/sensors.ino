@@ -1,5 +1,7 @@
 #include <Arduino.h>
 #include "tbm.h"
+#include "receiving_ESP.h"
+#include <HardwareSerial.h>
 #include <SPI.h> //enables communication between ESP32 and MAX31855 amp
 #include "Adafruit_MAX31855.h" // need to install this package, depends on above as well
 
@@ -21,11 +23,11 @@ Set up pins in tbm.h
 */
 
 Adafruit_MAX31855 thermocouple(CLK, CS, DO); //initialize thermocouple object
-// define a new pin for chip select - two temp readings - refactor code above using SPI. 
+HardwareSerial mySerial(1);  // Use UART1
 void sensorPinSetup() {
   Serial.begin(9600);
-  // no longer reading from pin for temperature
-  //pinMode(FLOW_IN_PIN, INPUT); // Set the thermocouple pin as input
+  mySerial.begin(115200, SERIAL_8N1, 17, 16); // RX = 16, TX = 17
+  Serial.println("ESP32 UART Receiver Started");
 }
 float get_voltage(int raw_adc) {
   return (raw_adc * AREF) / ADC_RESOLUTION;;  
@@ -129,26 +131,21 @@ float get_flowRate(float voltage){
   return 3.125 * (current_mA - 4);
 }
 
-// the values for this are not the ones we shd be using. - will figure out values soon 
-float get_gasConcentration(int value) { 
-  const float A = 60.0; 
-  const float V_REF = 3.3; 
-  const float B = -1.0; 
-  float voltage = (value / 4095.0) * V_REF; 
-  return (A * pow((voltage / V_REF), B) / 100);
-} 
-
-
 // ---------------------------------------------------------
 //  Read all sensors -> update systemData fields
 // ---------------------------------------------------------
 void readSensors() {
   // 1. Motor temperature
-  double motorTempC      = get_temperature();
+  double motorTempC = getReceivedTemp();
 
   systemData.motor_temp.value     = (int)motorTempC;
   systemData.motor_temp.timestamp = millis();
 
+  double gasPPM = getReceivedGas();
+  systemData.gas_sensor.value     = (int)gasPPM;
+  systemData.gas_sensor.timestamp = millis();
+
+  /*
   // 2. Pump temperature => "flow_temp" in your struct
   int   raw_pump        = analogRead(PUMP_TEMP_PIN);
   float volt_pump       = get_voltage(raw_pump);
@@ -183,6 +180,8 @@ void readSensors() {
   systemData.pump_power.value     = pumpPow;
   systemData.pump_power.timestamp = millis();
 
+  */
+
   // 7. Bentonite power sense (if no pin, set 0)
   systemData.bentonite_power.value     = 0;
   systemData.bentonite_power.timestamp = millis();
@@ -191,11 +190,6 @@ void readSensors() {
   int eStopVal = digitalRead(ESTOPSENSE_PIN);
   systemData.estop_button.value        = eStopVal;
   systemData.estop_button.timestamp    = millis();
-
-  // 9. Gas sense 
-  int gasValue = analogRead(GASSENSE_PIN); 
-  systemData.gas_sensor.value = get_gasConcentration(gasValue); 
-  systemData.gas_sensor.timestamp = millis(); 
 
   // 9. Update global_time
   systemData.global_time = millis();

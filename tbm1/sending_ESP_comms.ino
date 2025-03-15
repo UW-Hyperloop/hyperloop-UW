@@ -104,6 +104,6 @@ void loop() {
     double temp = get_temperature();
     int analogValue = analogRead(ANALOG_PIN);
     Serial.printf("Attempting to send temp: %f, analog: %d \n", temp, analogValue);
-    mySerial.printf("temp: %f, analog: %d \n", temp, analogValue);
+    mySerial.printf("%f,%d\n", temp, analogValue);
     delay(1000);
 }
