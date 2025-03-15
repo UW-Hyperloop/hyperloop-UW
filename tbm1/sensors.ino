@@ -141,7 +141,7 @@ void readSensors() {
   systemData.motor_temp.value     = (int)motorTempC;
   systemData.motor_temp.timestamp = millis();
 
-  double gasPPM = getReceivedGas();
+  int gasPPM = getReceivedGas();
   systemData.gas_sensor.value     = (int)gasPPM;
   systemData.gas_sensor.timestamp = millis();
 
