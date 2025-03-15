@@ -46,13 +46,19 @@ export default function Page() {
   
   useEffect(() => {
     // Step 1: Connect to the WebSocket server
-    const socket = new WebSocket('ws://localhost:8765'); // Adjust URL if necessary
+    const socket = new WebSocket('ws://192:168:0:111:8765'); // Adjust URL if necessary
     socketRef.current = socket;
     // Step 2: Handle incoming WebSocket messages
     socket.onmessage = function (event) {
       console.log(event);
       const data = JSON.parse(event.data); // Parse the JSON data
       if(data.state){
+        if(data.state === 'power_failure'){
+          
+        }
+        else if(data.state === 'comms_failure'){
+
+        }
         setMachineState(data.state);
       }
       if(data.bentonite_state){

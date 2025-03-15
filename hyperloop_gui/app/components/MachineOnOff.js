@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 
 const Container = styled.div`
   margin-right: auto;
-  width: 400px;
+  width: 450px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -30,6 +30,8 @@ const StatusDot = styled.span`
       case 'stopped': return '#797979';
       case 'error': return '#FF4F4F';
       case 'estop': return '#FF4F4F';
+      case 'power_failure': return '#FF4F4F';
+      case 'comms_failure': return '#FF4F4F';
       default: return '#797979';
     }
   }};
@@ -92,13 +94,15 @@ const MachineOnOff = ({ machineState, startStopToggle }) => {
             {machineState === 'stopped' && 'Machine is stopped'}
             {machineState === 'error' && 'Machine has error'}
             {machineState === 'estop' && 'Machine Estopped'}
+            {machineState === 'power_failure' && 'Machine power failure'}
+            {machineState === 'comms_failure' && 'Machine comms failure'}
           </StatusText>
         </StatusIndicator>
         <Button 
           isRunning={isRunning} 
           onClick={handleMachineToggle}
         // this is for if we want to disable the button if there is an error
-          disabled={machineState === 'error' || machineState === 'estop' || machineState === 'stopped'}
+          disabled={machineState !== 'config' && machineState !== 'running'}
         //   disabled={isRunning && machineState === 'error'}
         >
           {isRunning ? 'Stop machine' : 'Start machine'}
