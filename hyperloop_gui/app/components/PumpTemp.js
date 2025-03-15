@@ -18,25 +18,13 @@ const GaugeContainer = styled.div`
 const RedBackground = styled.div`
   position: absolute;
   top: 0;
+  left: 93%;
+  right: ${props => 100 - props.temperature}%;
   bottom: 0;
   background: #FF4F4F;
   opacity: 0.3;
   transition: right 0.1s ease-in-out;
   pointer-events: none;
-  z-index: 0;
-  ${props => {
-    if (props.value < 40) {
-      return `
-        left: ${(props.value / 250 * 100)}%;
-        right: ${100 - (40 / 250 * 100)}%;
-      `;
-    } else if (props.value > 200) {
-      return `
-        left: ${200 / 250 * 100}%;
-        right: ${100 - (props.value / 250 * 100)}%;
-      `;
-    }
-  }}
 `;
 
 const GaugeScale = styled.div`
@@ -60,7 +48,7 @@ const GridLines = styled.div`
     border-right: 1px dashed rgba(255, 255, 255, 0.1);
     height: 100%;
 
-    &:nth-child(5n):not(:nth-child(40)) {
+    &:nth-child(5n){
       border-right: 1px solid #ffffff;
     }
   }
@@ -69,7 +57,7 @@ const GridLines = styled.div`
 const Marker = styled.div`
   position: absolute;
   top: -55px;
-  left: ${props => (props.position / 250) * 100}%;
+  left: ${props => props.position}%;
   transform: translateX(-50%);
   transition: left 0.1s ease-in-out;
   display: flex;
@@ -79,7 +67,7 @@ const Marker = styled.div`
   
   &::before {
     content: '${props => props.position}';
-    color: ${props => props.isStale ? '#9F9F9F' : (props.position > 200 || props.position < 40) ? '#FF4F4F' : '#00ff00'};
+    color: ${props => props.isStale ? '#9F9F9F' : props.position > 93 ? '#FF4F4F' : '#00ff00'};
     display: block;
     margin-bottom: 10px;
     font-size: 20px;
@@ -96,7 +84,7 @@ const Marker = styled.div`
     display: block;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 25px solid ${props => props.isStale ? '#9F9F9F' : (props.position > 200 || props.position < 40) ? '#FF4F4F' : '#00ff00'};
+    border-top: 25px solid ${props => props.isStale ? '#9F9F9F' : props.position > 93 ? '#FF4F4F' : '#00ff00'};
     position: absolute;
     top: 25px;
     transition: border-top-color 0.1s ease-in-out;
@@ -127,11 +115,11 @@ const ScaleMarkers = styled.div`
     }
     
     &:first-child {
-      left: 16%;
+      left: 0;
     }
     
     &:last-child {
-      left: 80%;
+      left: 93%;
     }
   }
 `;
@@ -191,7 +179,7 @@ const Slider = styled.input`
   }
 `;
 
-const FlowMeter = ({ value, onChange, machineState }) => {
+const PumpTempMeter = ({ value, onChange, machineState }) => {
   const [isStale, setIsStale] = useState(true);
 
   useEffect(() => {
@@ -201,7 +189,7 @@ const FlowMeter = ({ value, onChange, machineState }) => {
 
   return (
     <Container>
-      <Title>Pump Flow Rate</Title>
+      <Title>Pump temperature (Celsius)</Title>
       <GaugeContainer>
         <GaugeScale>
           <GridLines>
@@ -209,24 +197,22 @@ const FlowMeter = ({ value, onChange, machineState }) => {
               <div key={i} />
             ))}
           </GridLines>
-          {(value < 40 || value > 200) && 
-            <RedBackground value={value} />
-          }
+          {value > 93 && <RedBackground temperature={value} />}
           <ScaleMarkers>
-            <div data-value="40" />
-            <div data-value="200" />
+            <div data-value="0" />
+            <div data-value="93" />
           </ScaleMarkers>
           <Marker position={value} isStale={isStale}/>
         </GaugeScale>
         <ScaleNumbers>
-          {[0, 25, 50, 75, 100, 125, 150, 175, 200, 225, 250].map((num) => (
+          {[0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100].map((num) => (
             <span
               key={num}
               style={{
                 left: num === 0 ? '0%' : 
-                  num === 250 ? '100%' : 
-                  `${(num / 250) * 100}%`,
-                transform: num === 50 ? 'translateX(-50%)' : 'translateX(-50%)'
+                  num === 100 ? '100%' : 
+                  `${(num / 100) * 100}%`,
+                transform: num === 100 ? 'translateX(-50%)' : 'translateX(-50%)'
               }}
             >
               {num}
@@ -238,7 +224,7 @@ const FlowMeter = ({ value, onChange, machineState }) => {
       <Slider
         type="range"
         min="0"
-        max="250"
+        max="100"
         step="0.1"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
@@ -248,4 +234,4 @@ const FlowMeter = ({ value, onChange, machineState }) => {
   );
 };
 
-export default FlowMeter;
+export default PumpTempMeter;

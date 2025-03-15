@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import { useEffect, useState } from "react";
 
 const Container = styled.div`
   background: #1C1C1C;
@@ -47,7 +48,7 @@ const GridLines = styled.div`
     border-right: 1px dashed rgba(255, 255, 255, 0.1);
     height: 100%;
 
-    &:nth-child(5n):not(:nth-child(40)) {
+    &:nth-child(5n) {
       border-right: 1px solid #ffffff;
     }
   }
@@ -56,7 +57,7 @@ const GridLines = styled.div`
 const Marker = styled.div`
   position: absolute;
   top: -55px;
-  left: ${props => (props.position / 50) * 100}%;
+  left: ${props => (props.position / 600) * 100}%;
   transform: translateX(-50%);
   transition: left 0.1s ease-in-out;
   display: flex;
@@ -66,7 +67,7 @@ const Marker = styled.div`
   
   &::before {
     content: '${props => props.position}';
-    color: ${props => props.position > 40 ? '#FF4F4F' : '#00ff00'};
+    color: ${props => props.isStale ? '#9F9F9F' : '#00ff00'};
     display: block;
     margin-bottom: 10px;
     font-size: 20px;
@@ -83,7 +84,7 @@ const Marker = styled.div`
     display: block;
     border-left: 8px solid transparent;
     border-right: 8px solid transparent;
-    border-top: 25px solid ${props => props.position > 40 ? '#FF4F4F' : '#00ff00'};
+    border-top: 25px solid ${props => props.isStale ? '#9F9F9F' : '#00ff00'};
     position: absolute;
     top: 25px;
     transition: border-top-color 0.1s ease-in-out;
@@ -112,14 +113,6 @@ const ScaleMarkers = styled.div`
       color: #00ff00;
       font-size: 14px;
     }
-    
-    &:first-child {
-      left: 0;
-    }
-    
-    &:last-child {
-      left: 80%;
-    }
   }
 `;
 
@@ -141,7 +134,13 @@ const ScaleNumbers = styled.div`
 const Title = styled.div`
   color: white;
   font-size: 16px;
-  margin-top: 10px;
+  margin-bottom: 60px;
+`;
+const StatusMessage = styled.div`
+  color: #FFFFFF;
+  font-size: 14px;
+  margin-top: 5px;
+  text-align: center;
 `;
 
 const Slider = styled.input`
@@ -172,9 +171,17 @@ const Slider = styled.input`
   }
 `;
 
-const WaterPumpGauge = ({ value, onChange }) => {
+const GasSensor = ({ value, onChange, machineState }) => {
+  const [isStale, setIsStale] = useState(true);
+
+  useEffect(() => {
+    setIsStale(machineState !== "running");
+    console.log("machine state: " + machineState);
+  }, [machineState]);
+
   return (
     <Container>
+      <Title>Explosive Gas Concentration (PPM)</Title>
       <GaugeContainer>
         <GaugeScale>
           <GridLines>
@@ -182,40 +189,36 @@ const WaterPumpGauge = ({ value, onChange }) => {
               <div key={i} />
             ))}
           </GridLines>
-          {value > 40 && <RedBackground temperature={value} />}
-          <ScaleMarkers>
-            <div data-value="0" />
-            <div data-value="40" />
-          </ScaleMarkers>
-          <Marker position={value} />
+          <Marker position={value} isStale={isStale}/>
         </GaugeScale>
         <ScaleNumbers>
-          {[0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50].map((num) => (
+          {[0, 60, 120, 180, 240, 300, 360, 420, 480, 540, 600].map((num) => (
             <span
               key={num}
               style={{
                 left: num === 0 ? '0%' : 
-                  num === 50 ? '100%' : 
-                  `${(num / 50) * 100}%`,
-                transform: num === 50 ? 'translateX(-50%)' : 'translateX(-50%)'
+                  num === 600 ? '100%' : 
+                  `${(num / 600) * 100}%`,
+                transform: num === 600 ? 'translateX(-50%)' : 'translateX(-50%)'
               }}
             >
-              {num === 50 ? `${num}°C` : num}
+              {num}
             </span>
           ))}
         </ScaleNumbers>
       </GaugeContainer>
+      <StatusMessage>Status: {isStale?  "Stale" : "Active"}</StatusMessage>
       <Slider
         type="range"
         min="0"
-        max="50"
-        step="0.1"
+        max="600"
+        step="1"
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
       />
-      <Title>Water pump temperature (Celsius)</Title>
+      
     </Container>
   );
 };
 
-export default WaterPumpGauge;
+export default GasSensor;

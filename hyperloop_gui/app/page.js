@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import WaterPumpGauge from "./components/WaterPump";
+import PumpTempMeter from './components/PumpTemp';
 import MotorTempGauge from "./components/MotorTemp";
+import GasSensor from './components/GasSensor';
 import styled from 'styled-components';
-import WaterFlowGauge from "./components/WaterFlow";
-import StatusIndicators from "./components/Indicator";
+import MachineOnOff from "./components/MachineOnOff";
 import ErrorMessages from "./components/ErrorMessages";
-import FlowMeter from './components/FlowMeter';
+import BentoniteOnOff from './components/BentoniteOnOff';
 
 const PageContainer = styled.div`
   background-color: #1C1C1C;
@@ -20,40 +20,57 @@ const PageContainer = styled.div`
   gap: 20px;
 `;
 
-const RowOne = styled.div`
+const Row = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: center;
   align-items: center;
   width: 100%;
-  gap: 100px;
+  gap: 60px;
+`;
+
+const Buttons = styled.div`
+  display: flex;
+  flex-direction: row;
+  width: 100%;
 `;
 
 export default function Page() {
   const [motorTemp, setMotorTemp] = useState(20);
-  const [waterFlowInRate, setWaterFlowInRate] = useState(96);
-  const [waterFlowOutRate, setWaterFlowOutRate] = useState(96);
-  const [waterPumpTemp, setWaterPumpTemp] = useState(20);
+  const [pumpTemp, setPumpTemp] = useState(20);
+  const [gasPPM, setGasPPM] = useState(23);
   const [machineState, setMachineState] = useState('config');
+  const [bentoniteState, setBentoniteState] = useState('off');
+  const [pumpOn, setPumpOn] = useState(false);
   const socketRef = useRef(null);
   
   useEffect(() => {
     // Step 1: Connect to the WebSocket server
-    const socket = new WebSocket('ws://localhost:8765'); // Adjust URL if necessary
+    const socket = new WebSocket('ws://192:168:0:111:8765'); // Adjust URL if necessary
     socketRef.current = socket;
     // Step 2: Handle incoming WebSocket messages
     socket.onmessage = function (event) {
       console.log(event);
       const data = JSON.parse(event.data); // Parse the JSON data
       if(data.state){
-        if(data.state === "estop"){
-          //alert("Physcial estop pressed");
+        if(data.state === 'power_failure'){
+          
+        }
+        else if(data.state === 'comms_failure'){
+
         }
         setMachineState(data.state);
+      }
+      if(data.bentonite_state){
+        setBentoniteState(data.bentonite_state);
       }
       const newMotorTemp = data.motor_temp?.value;
       if(newMotorTemp){
         setMotorTemp(Math.floor(newMotorTemp * 100) / 100);
+      }
+      const newGasPPM = data.gas_ppm?.value;
+      if(newGasPPM){
+        setGasPPM(newGasPPM);
       }
     };
  
@@ -92,9 +109,25 @@ export default function Page() {
     else if(machineState === 'running'){
       setMachineState('stopped');
       sendCommandToServer("TBM_stop");
-      //alert("stopping and resetting machine")
+      if(bentoniteState === 'on'){
+        setBentoniteState('off');
+        sendCommandToServer("TBM_bentonite_stop");
+      }
     }
   };
+
+  const toggleBentonite = () => {
+    if(machineState === 'running'){
+      if(bentoniteState === 'off'){
+        sendCommandToServer("TBM_bentonite_start");
+        setBentoniteState('on');
+      }
+      else {
+        sendCommandToServer("TBM_bentonite_stop");
+        setBentoniteState('off');
+      }
+    }
+  }
 
   // mock reset machine 
   useEffect(() => {
@@ -103,23 +136,24 @@ export default function Page() {
       setTimeout(() => {
         console.log("machine reset");
         setMachineState('config');
-      }, 3000);
+      }, 2000);
     }
   }, [machineState]);
   return (
     <PageContainer>
-      <StatusIndicators machineState={machineState} startStopToggle={toggleStartStop}/>
-      <RowOne>
-        <FlowMeter 
-          title={"Pump Flow Rate"}
-          value={waterFlowInRate} 
-          onChange={setWaterFlowInRate}
-          machineState={machineState}
-          max={250}
-        />
+      <Buttons>
+        <MachineOnOff machineState={machineState} startStopToggle={toggleStartStop}/>
+        <BentoniteOnOff bentoniteState={bentoniteState} machineState={machineState} startStopToggle={toggleBentonite}/>
+      </Buttons>
+      <Row>
         <MotorTempGauge 
           value={motorTemp} 
           onChange={setMotorTemp} 
+          machineState={machineState}
+        />
+        <GasSensor 
+          value={gasPPM} 
+          onChange={setGasPPM} 
           machineState={machineState}
         />
         {/**
@@ -130,24 +164,7 @@ export default function Page() {
           { min: 85, max: 90, color: 'yellow' },  // Warning high
           { min: 90, max: 110, color: 'red' },     // Critical high
         ]} */}
-      </RowOne>
-      {/**
-      <WaterFlowGauge 
-        direction="IN" 
-        value={waterFlowInRate} 
-        onChange={setWaterFlowInRate}
-      />
-      <WaterFlowGauge 
-        direction="OUT" 
-        value={waterFlowOutRate} 
-        onChange={setWaterFlowOutRate}
-      />
-       */}
-      
-      <ErrorMessages 
-        motorTemp={motorTemp}
-        waterFlowRate={waterFlowInRate}
-      />
+      </Row>    
     </PageContainer>
   );
 }

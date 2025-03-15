@@ -1,0 +1,8 @@
+GUI sensors
+
+motor temp, already have safe range 0-40 C
+pump temp, need to add safe range 40-200 F
+gas sensor, measuring explosive gas, measured numerically. (24 base, goes to 600?), need to add
+bentonite button?: on off switch, need to add
+
+

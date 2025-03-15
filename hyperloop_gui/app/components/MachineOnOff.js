@@ -3,13 +3,14 @@
 import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 
-const TopSection = styled.div`
-  width: 100%;
+const Container = styled.div`
+  margin-right: auto;
+  width: 450px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
   padding: 0 20px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 `;
 
 const StatusIndicator = styled.div`
@@ -29,6 +30,8 @@ const StatusDot = styled.span`
       case 'stopped': return '#797979';
       case 'error': return '#FF4F4F';
       case 'estop': return '#FF4F4F';
+      case 'power_failure': return '#FF4F4F';
+      case 'comms_failure': return '#FF4F4F';
       default: return '#797979';
     }
   }};
@@ -71,7 +74,7 @@ const Button = styled.button`
   }
 `;
 
-const Indicators = ({ machineState, startStopToggle }) => {
+const MachineOnOff = ({ machineState, startStopToggle }) => {
     const [isRunning, setIsRunning] = useState(machineState === 'running');
   
     const handleMachineToggle = async () => {
@@ -82,7 +85,7 @@ const Indicators = ({ machineState, startStopToggle }) => {
       setIsRunning(machineState === 'running');
     }, [machineState]);
     return (
-      <TopSection>
+      <Container>
         <StatusIndicator>
           <StatusDot status={machineState} />
           <StatusText>
@@ -91,19 +94,21 @@ const Indicators = ({ machineState, startStopToggle }) => {
             {machineState === 'stopped' && 'Machine is stopped'}
             {machineState === 'error' && 'Machine has error'}
             {machineState === 'estop' && 'Machine Estopped'}
+            {machineState === 'power_failure' && 'Machine power failure'}
+            {machineState === 'comms_failure' && 'Machine comms failure'}
           </StatusText>
         </StatusIndicator>
         <Button 
           isRunning={isRunning} 
           onClick={handleMachineToggle}
         // this is for if we want to disable the button if there is an error
-          disabled={machineState === 'error' || machineState === 'estop'}
+          disabled={machineState !== 'config' && machineState !== 'running'}
         //   disabled={isRunning && machineState === 'error'}
         >
           {isRunning ? 'Stop machine' : 'Start machine'}
         </Button>
-      </TopSection>
+      </Container>
     );
   };
 
-  export default Indicators;
+  export default MachineOnOff;
