@@ -130,10 +130,10 @@ float get_flowRate(float voltage){
 // ---------------------------------------------------------
 void readSensors() {
   // 1. Motor temperature
-  double motorTempC      = get_temperature();
+  // double motorTempC      = get_temperature();
 
-  systemData.motor_temp.value     = (int)motorTempC;
-  systemData.motor_temp.timestamp = millis();
+  // systemData.motor_temp.value     = (int)motorTempC;
+  // systemData.motor_temp.timestamp = millis();
 
   // 2. Pump temperature => "flow_temp" in your struct
   int   raw_pump        = analogRead(PUMP_TEMP_PIN);
@@ -180,4 +180,5 @@ void readSensors() {
 
   // 9. Update global_time
   systemData.global_time = millis();
+  receivingESP_loop();
 }

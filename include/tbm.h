@@ -8,6 +8,7 @@
 #include <states.h>
 #include <comms.h>
 #include <config.h>
+#include <recv.h>
 
 // -------------------------------------------------------------------
 //    SYSTEM DATA STRUCT

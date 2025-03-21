@@ -31,6 +31,7 @@ void setup() {
   tbm_start_stop();
   eStop_loop();
   state_loop();
+  receivingESP_setup();
 }
 
 void loop() {
@@ -54,4 +55,3 @@ void loop() {
   state_loop();
   eStop_loop();
 }
- 
