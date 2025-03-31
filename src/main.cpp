@@ -7,7 +7,17 @@ sys_json systemData;
 
 using namespace std;
 
+uint8_t missCount = 0;
+bool ack = false;
+int sensorCount = 0;
+
 HardwareSerial CH9121(2);
+
+static const unsigned long SENSOR_READ_INTERVAL = 250;
+static const unsigned long DATA_SEND_INTERVAL   = 500;
+
+static unsigned long lastSensorReadTime = 0;
+static unsigned long lastDataSendTime   = 0;
 
 void setup() {
   Serial.begin(115200);
@@ -39,19 +49,44 @@ void loop() {
   state_loop();
   tbm_start_stop();
   state_loop();
+  unsigned long now = millis();
+  if (now - lastSensorReadTime >= SENSOR_READ_INTERVAL) {
+    lastSensorReadTime = now;
+    readSensors();
+  }
 
   if (systemData.state == STATE_RUNNING) {
-    readSensors();
-    uint8_t* msg = tbm_data();
-    CH9121.write(msg, MSG_SIZE);
-    CH9121.flush();
-    delete[] msg;
-    delay(500);
+    if (now - lastDataSendTime >= DATA_SEND_INTERVAL) {
+      lastDataSendTime = now;
+
+      uint8_t* msg = tbm_data();
+      CH9121.write(msg, MSG_SIZE);
+      CH9121.flush();
+      delete[] msg;
+
+      if (!ack) {
+        // If we keep missing ACK, stop the TBM
+        if (missCount > 5) {
+          systemData.state = STATE_STOP;
+          stoppingTBM();
+          Serial.println("Too many missed ACKs -> STOP");
+        }
+      }
+      ack = false;
+      missCount++;
+    }
+  } else if (systemData.state == STATE_STOP && systemData.estop_button.value == 0) {
+    if (now - lastDataSendTime >= 1000) {
+      lastDataSendTime = now;
+      uint8_t* msg = tbm_data();
+      CH9121.write(msg, MSG_SIZE);
+      CH9121.flush();
+      delete[] msg;
+    }
   } else {
     readSensors();
   }
 
-  tbm_start_stop();
   state_loop();
   eStop_loop();
 }

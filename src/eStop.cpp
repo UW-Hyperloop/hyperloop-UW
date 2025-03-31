@@ -10,7 +10,7 @@ void eStop_loop() {
   int current_sample = millis();
   int buttonState = digitalRead(ESTOPSENSE_PIN);
   // Serial.println(buttonState);
-  if (current_sample - last_sample > 500) {
+  if (current_sample - last_sample > 500) { // might be useless
     // Read the state of the emergency stop button
     int buttonState = digitalRead(ESTOPSENSE_PIN);
 
@@ -18,6 +18,8 @@ void eStop_loop() {
       Serial.println("Emergency Stop Activated!");
       // TODO: add stop logic
       systemData.estop_button.value = 1;
+
+      // dump all bytes if it was already running.
       if (!onflag) {
         while (CH9121.available() > 0) {
           CH9121.read();  // dump all incoming bytes

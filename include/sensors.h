@@ -31,7 +31,8 @@
 static const float AREF           = 3.3f;
 static const int   ADC_RESOLUTION = 4095;
 static const float SHUNT_RESISTOR = 150.0f;
-static const float maxTemp        = 3000.0f; // Example threshold
+static const float maxTemp        = 40.0;
+static const float minTemp        = 5.0;
 
 struct Sensor {
   bool         active;

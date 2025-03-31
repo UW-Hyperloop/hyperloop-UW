@@ -30,7 +30,9 @@ struct sys_json {
 
 extern sys_json  systemData;
 extern TBMState  currentState;
-
+extern uint8_t missCount;
+extern bool ack;
+extern int sensorCount;
 
 // -------------------------------------------------------------------
 //    HELPER: Convert TBMState enum -> string for JSON, etc.

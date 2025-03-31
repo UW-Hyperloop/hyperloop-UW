@@ -1,5 +1,5 @@
 #include <Arduino.h>
-#include "tbm.h"
+#include <tbm.h>
 
 // ---------------------------------------------------------
 //  Setup for state machine
@@ -37,14 +37,16 @@ void state_loop() {
       break;
 
     case STATE_RUNNING:
-      if (systemData.motor_temp.value >= maxTemp || systemData.estop_button.value == 1) {
-        stoppingTBM(); 
+      if (systemData.motor_temp.value >= maxTemp || systemData.estop_button.value == 1 ||
+          systemData.gas_sensor.value == 1 || sensorCount > 5) {
+        stoppingTBM();
         systemData.state = STATE_STOP;
         Serial.println("state running is stopped");
-        Serial.println(systemData.motor_temp.value);
-        Serial.println(systemData.estop_button.value);
+        // Serial.println(systemData.motor_temp.value);
+        // Serial.println(systemData.estop_button.value);
         break;
-      } 
+      }
+
       digitalWrite(POWCTRL_PIN, HIGH);
       digitalWrite(BENTCTRL_PIN, HIGH);
       Serial.printf("RUNNING: Motor temp = %d C\n", systemData.motor_temp.value);
@@ -60,6 +62,7 @@ void state_loop() {
       if (!checkStopped()) { 
         Serial.println("TRIED 100 TIMES TO STOP TBM - PULL THE PLUG!"); 
       }
+      
       // if (systemData.estop_button.value == 0 && systemData.motor_temp.value < maxTemp) {
       //   systemData.state = STATE_CONFIG;
       // }

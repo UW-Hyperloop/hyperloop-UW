@@ -5,6 +5,7 @@
 HardwareSerial mySerial(0);  // Use UART1
 volatile int temperature = 0.0;
 volatile int gasValue = 0;
+static const unsigned long DATA_TIMEOUT = 3000;
 
 void receivingESP_setup() {
     mySerial.begin(115200, SERIAL_8N1, 3, 1); // RX on GPIO16, no TX needed
@@ -13,22 +14,27 @@ void receivingESP_setup() {
 } 
 
 void receivingESP_loop() {
-    if (mySerial.available() >= 3) {
-        uint8_t buf[3];
-        size_t received = mySerial.readBytes(buf, 3);
-        if (received == 3) {
-            uint8_t temp = buf[0];
-            uint16_t gas = buf[1] | (buf[2] << 8);
+    while (mySerial.available() > 0) {
+        uint8_t rec = mySerial.read();
+        uint8_t curr = rec >> 7; // top bit indicates "temp" (1) or "gas" (0)
 
-            temperature = temp;
-            gasValue    = gas;
-            systemData.motor_temp.value   = temperature;
-            systemData.motor_temp.timestamp = millis();
-            systemData.gas_sensor.value   = gasValue;
-            systemData.gas_sensor.timestamp = millis();
+        if (curr == 1) {
+        // If top bit=1 => lower 6 bits are the temperature
+        systemData.motor_temp.value = (rec & 0x3F);
+        systemData.motor_temp.timestamp = millis();
+        } else {
+        // If top bit=0 => this is the gas value in lower 7 bits, if needed
+        systemData.gas_sensor.value = (rec & 0x7F);
+        systemData.gas_sensor.timestamp = millis();
         }
+        sensorCount = 0;
     }
-    else {
-        Serial.println("not received");
+
+    unsigned long now = millis();
+    if ((now - systemData.motor_temp.timestamp) > DATA_TIMEOUT) {
+        systemData.motor_temp.value = -1;
+    }
+    if ((now - systemData.gas_sensor.timestamp) > DATA_TIMEOUT) {
+        systemData.gas_sensor.value = 0; // or -1, your choice
     }
 }

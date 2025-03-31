@@ -31,6 +31,28 @@ uint8_t* tbm_init() {
   return msg;
 }
 
+bool tbm_ack() {
+  if (CH9121.available() < 3) {
+    return false; 
+  }
+
+  uint8_t buffer[3];
+  // Attempt to read exactly 3 bytes
+  int readRet = CH9121.readBytes(buffer, 3);
+  if (readRet != 3) {
+    // Could not read all 3 bytes; just return (or handle as error).
+    return false;
+  }
+
+  if (buffer[0] == MSG_START && buffer[2] == MSG_END) {
+    if (buffer[1] == TBM_ACK) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 void tbm_start_stop() {
   // If fewer than 3 bytes are available, we can't parse a command yet.
   if (CH9121.available() < 3) {
@@ -58,13 +80,21 @@ void tbm_start_stop() {
       Serial.println("Received TBM_START command");
       digitalWrite(POWCTRL_PIN, HIGH);
       systemData.state = STATE_RUNNING;
+      while (CH9121.available() > 0) {
+          CH9121.read();  // dump all incoming bytes
+      }
     } else if (buffer[1] == TBM_STOP) {
       Serial.println("Received TBM_STOP command");
       digitalWrite(POWCTRL_PIN, LOW);
       systemData.state = STATE_STOP;
+      while (CH9121.available() > 0) {
+          CH9121.read();  // dump all incoming bytes
+      }
+    } else if (buffer[1] == TBM_ACK) {
+      ack = true;
+      missCount = 0;
     } else {
       Serial.println("Received unknown TBM command");
-      // Optional: handle error
     }
   } else {
     // If it’s not in the [start, command, end] format, decide how to handle it.

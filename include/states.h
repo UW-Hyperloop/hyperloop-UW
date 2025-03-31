@@ -20,3 +20,4 @@ void state_setup();
 bool checkStopped();
 void updateSystemState();
 void state_loop();
+void stoppingTBM();
