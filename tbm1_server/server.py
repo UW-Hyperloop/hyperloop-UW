@@ -21,7 +21,8 @@ WS_HOST = '0.0.0.0'
 WS_PORT = 8765
 
 START_ID = 0x32
-STOP_ID  = 0x33
+STOP_ID = 0x33
+ACK_ID = 0x36
 
 KEY_SIGNAL = False
 CHAR       = None
@@ -79,33 +80,42 @@ ws_loop = None
 
 
 async def ws_handler(websocket):
-    """
-    Handle incoming messages from a connected GUI WebSocket client.
-    Also add the client to a set so we can broadcast new data to it.
-    """
-    global send_start_flag, send_stop_flag
+    global send_start_flag, send_stop_flag, estop_flag
     connected_websockets.add(websocket)
     try:
         async for message in websocket:
-            # Handle incoming messages
             try:
                 data = json.loads(message)
                 cmd = data.get("command", "").lower()
+
                 if cmd == "tbm_start":
                     print("[WEBSOCKET] TBM_start command received from GUI.")
                     commands_from_gui.put("start")
+
                 elif cmd == "tbm_stop":
                     print("[WEBSOCKET] TBM_stop command received from GUI.")
                     send_stop_flag = True
                     send_start_flag = False
+
+                elif cmd == "tbm_reset":
+                    print("[WEBSOCKET] TBM_reset command received from GUI.")
+                    # Clear the estop flag if we want to "reset" from comms_failure
+                    estop_flag = False
+                    # Optionally let the GUI know we returned to config
+                    if ws_loop is not None:
+                        config_msg = json.dumps({"state": "config"})
+                        await broadcast_to_gui(config_msg)
+
                 else:
                     print("[WEBSOCKET] Unknown command from GUI:", data)
+
             except json.JSONDecodeError:
                 print("[WEBSOCKET] Received non-JSON message from GUI:", message)
     except websockets.exceptions.ConnectionClosed:
         pass
     finally:
         connected_websockets.remove(websocket)
+
 
 
 async def broadcast_to_gui(json_data: str):
@@ -189,7 +199,7 @@ def start_server():
 
         # 2) If we are in "send_start_flag" mode and the ESP is NOT sending JSON,
         #    keep sending [0x02, START_ID, 0x03].
-        if send_start_flag and not esp_sending_json:
+        if send_start_flag:
             # Keep sending the start message
             msg = bytes([0x02, START_ID, 0x03])
             try:
@@ -199,6 +209,16 @@ def start_server():
             except BrokenPipeError:
                 print("[SERVER] Broken pipe on sending START. Will retry after reconnect.")
                 # TODO: Implement reconnect logic if needed
+                while True:
+                    try:
+                        client_socket, client_address = server_socket.accept()
+
+                        print(f"[SERVER] Connected by {client_address}")
+                        client_socket.settimeout(0.5)  # Non-blocking or short-blocking reads
+                        break
+                    except Exception as e:
+                        print(f"[SERVER] Error accepting connection: {e}")
+                        time.sleep(1)
             except Exception as e:
                 print(f"[SERVER] Error sending START: {e}")
 
@@ -247,7 +267,7 @@ def start_server():
                             parsed = json.loads(json_str)
                             # We have valid JSON from the ESP
                             esp_sending_json = True
-                            last_json_time   = time.time()
+                            last_json_time = time.time()
                             # If we were sending start messages, we can stop once we see JSON
                             if send_start_flag:
                                 send_start_flag = False
@@ -260,6 +280,21 @@ def start_server():
                                 )
                             print("[SERVER] Broadcasted ESP data to GUI:", json.dumps(parsed, indent=2))
 
+                            ack = bytes([0x02, ACK_ID, 0x03])
+                            try:
+                                client_socket.sendall(ack)
+                                time.sleep(0.1)
+                            except BrokenPipeError:
+                                time_since_json = time.time() - last_json_time
+                                print("comms failure 1")
+                                if time_since_json > 5.0:
+                                    # comms failure
+                                    comms_message = json.dumps({"state": "comms_failure"})
+                                    if ws_loop is not None:
+                                        asyncio.run_coroutine_threadsafe(broadcast_to_gui(comms_message), ws_loop)
+                            except Exception as e:
+                                print(f"[SERVER] Error sending ACK: {e}")
+
                         except json.JSONDecodeError:
                             print("[SERVER] Received invalid JSON. Data:", json_str)
                     else:
@@ -270,10 +305,12 @@ def start_server():
                         estop_flag = True
                         #send message to gui indicating estop
                         estop_message = json.dumps({"state": "estop"})
+                        esp_sending_json = False
                         if ws_loop is not None:
                             asyncio.run_coroutine_threadsafe(broadcast_to_gui(estop_message), ws_loop)
                     elif msg_id == 0x32:
                         estop_flag = False
+                        esp_sending_json = False
                         #send message to gui indicating switch lifted and back in cofig mode
                         estop_message = json.dumps({"state": "config"})
                         if ws_loop is not None:
@@ -295,21 +332,19 @@ def start_server():
                         esp_sending_json = False
                         send_stop_flag = False
                         print("[SERVER] Stopped receiving JSON. STOP cycle complete.")
+                        stop_msg = json.dumps({"state": "stop"})
+                        if ws_loop is not None:
+                            asyncio.run_coroutine_threadsafe(broadcast_to_gui(stop_msg), ws_loop)
                 else:
-                    esp_sending_json = False
-            # else:
-            #     if not send_stop_flag:
-            #         time_since_json = time.time() - last_json_time
-            #         if time_since_json > 10.0:
-            #             fail_msg = json.dumps({"state": "power_failure"})
-            #             if ws_loop is not None:
-            #                 asyncio.run_coroutine_threadsafe(broadcast_to_gui(fail_msg), ws_loop)
-            #             print("power failure")
-            #         else:
-            #             fail_msg = json.dumps({"state": "comms_failure"})
-            #             if ws_loop is not None:
-            #                 asyncio.run_coroutine_threadsafe(broadcast_to_gui(fail_msg), ws_loop)
-            #             print("comms failure")
+                    time_since_json = time.time() - last_json_time
+                    print("comms failure 2")
+                    if time_since_json > 5.0:
+                        # comms failure
+                        comms_message = json.dumps({"state": "comms_failure"})
+                        esp_sending_json = False
+                        estop_flag = True
+                        if ws_loop is not None:
+                            asyncio.run_coroutine_threadsafe(broadcast_to_gui(comms_message), ws_loop)
 
 
         # Optional: If you want to detect “if JSON stops unexpectedly, resume sending start”:
