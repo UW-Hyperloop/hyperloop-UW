@@ -90,8 +90,8 @@ const MachineOnOff = ({ machineState, startStopToggle }) => {
           <StatusDot status={machineState} />
           <StatusText>
             {machineState === 'config' && 'Machine is ready'}
-            {machineState === 'running' && 'Machine is running'}
-            {machineState === 'stopped' && 'Machine is stopped'}
+            {machineState === 'running' && 'Machine is active'}
+            {machineState === 'stop' && 'Machine is stopped'}
             {machineState === 'error' && 'Machine has error'}
             {machineState === 'estop' && 'Machine Estopped'}
             {machineState === 'power_failure' && 'Machine power failure'}
@@ -102,7 +102,7 @@ const MachineOnOff = ({ machineState, startStopToggle }) => {
           isRunning={isRunning} 
           onClick={handleMachineToggle}
         // this is for if we want to disable the button if there is an error
-          disabled={machineState !== 'config' && machineState !== 'running'}
+          disabled={machineState !== 'config' && machineState !== 'running' && machineState !== 'stop'}
         //   disabled={isRunning && machineState === 'error'}
         >
           {isRunning ? 'Stop machine' : 'Start machine'}

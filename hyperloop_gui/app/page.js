@@ -1,14 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import PumpTempMeter from './components/PumpTemp';
-import MotorTempGauge from "./components/MotorTemp";
-import GasSensor from './components/GasSensor';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import MachineOnOff from "./components/MachineOnOff";
-import ErrorMessages from "./components/ErrorMessages";
-import BentoniteOnOff from './components/BentoniteOnOff';
+import MotorTempGauge from "./components/MotorTemp";
 
+// PageContainer now supports a prop to grey itself out in comms_failure
 const PageContainer = styled.div`
   background-color: #1C1C1C;
   min-height: 100vh;
@@ -18,6 +15,59 @@ const PageContainer = styled.div`
   align-items: center;
   padding-top: 20px;
   gap: 20px;
+  position: relative;
+
+  ${(props) =>
+    props.isCommsFailure &&
+    css`
+      opacity: 0.5;
+      pointer-events: none
+    `}
+`;
+
+// A bigger reset button
+const ResetButton = styled.button`
+  font-size: 1.5rem;
+  padding: 16px 24px;
+  margin-top: 16px;
+  background-color: #ff6600;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-size: 1.6rem;
+  background-color: rgba(0, 0, 0, 0.5);
+  pointer-events: auto;
+  z-index = 9999;
+`;
+
+const GasSensorPanel = styled.div`
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 16px 24px;
+  border-radius: 10px;
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #fff;
+  ${(props) =>
+    props.gasValue === 0
+      ? css`
+          background-color: green;
+        `
+      : css`
+          background-color: red;
+        `}
 `;
 
 const Row = styled.div`
@@ -37,134 +87,121 @@ const Buttons = styled.div`
 
 export default function Page() {
   const [motorTemp, setMotorTemp] = useState(20);
-  const [pumpTemp, setPumpTemp] = useState(20);
-  const [gasPPM, setGasPPM] = useState(23);
+  const [gasPPM, setGasPPM] = useState(0); // 0 or 1
   const [machineState, setMachineState] = useState('config');
   const [bentoniteState, setBentoniteState] = useState('off');
-  const [pumpOn, setPumpOn] = useState(false);
-  const socketRef = useRef(null);
-  
-  useEffect(() => {
-    // Step 1: Connect to the WebSocket server
-    const socket = new WebSocket('ws://192:168:0:111:8765'); // Adjust URL if necessary
-    socketRef.current = socket;
-    // Step 2: Handle incoming WebSocket messages
-    socket.onmessage = function (event) {
-      console.log(event);
-      const data = JSON.parse(event.data); // Parse the JSON data
-      if(data.state){
-        if(data.state === 'power_failure'){
-          
-        }
-        else if(data.state === 'comms_failure'){
 
-        }
+  const socketRef = useRef(null);
+
+  // Connect to server and listen
+  useEffect(() => {
+    const socket = new WebSocket('ws://192.168.0.111:8765'); 
+    socketRef.current = socket;
+
+    socket.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      if (data.state) {
         setMachineState(data.state);
       }
-      if(data.bentonite_state){
+      if (data.bentonite_state) {
         setBentoniteState(data.bentonite_state);
       }
-      const newMotorTemp = data.motor_temp?.value;
-      if(newMotorTemp){
-        setMotorTemp(Math.floor(newMotorTemp * 100) / 100);
+      if (data.motor_temp?.value !== undefined) {
+        setMotorTemp(Math.floor(data.motor_temp.value * 100) / 100);
       }
-      const newGasPPM = data.gas_ppm?.value;
-      if(newGasPPM){
-        setGasPPM(newGasPPM);
+      if (data.gas_sensor?.value !== undefined) {
+        setGasPPM(data.gas_sensor.value);
       }
     };
- 
-    // Step 3: Handle WebSocket connection close
+
     socket.onclose = function () {
       console.log('WebSocket connection closed');
     };
- 
-    // Step 4: Clean up WebSocket connection on component unmount
+
     return () => {
-      //socket.close();
+      // socket.close();
     };
   }, []);
-  
- 
 
-  // sends certain commands to server
+  // Send command to server
   const sendCommandToServer = (command) => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
       const message = JSON.stringify({ command });
       socketRef.current.send(message);
-      console.log(" Sent command to server:", message);
+      console.log("Sent command to server:", message);
     } else {
-      console.warn(" WebSocket is not open. Cannot send:", command);
+      console.warn("WebSocket is not open. Cannot send:", command);
     }
-    console.log("sending command: " + command);
   };
 
-  // start stop button handling
+  // Start/Stop
   const toggleStartStop = () => {
-    if(machineState === 'config'){
-      //start machine
-      setMachineState('running');
-      sendCommandToServer("TBM_start")
-    }
-    else if(machineState === 'running'){
-      setMachineState('stopped');
-      sendCommandToServer("TBM_stop");
-      if(bentoniteState === 'on'){
+    if (machineState === 'config' || machineState === 'stop') {
+      sendCommandToServer("tbm_start");
+      // setMachineState('running');
+    } else if (machineState === 'running') {
+      setMachineState('stop');
+      sendCommandToServer("tbm_stop");
+      if (bentoniteState === 'on') {
         setBentoniteState('off');
         sendCommandToServer("TBM_bentonite_stop");
       }
     }
   };
 
-  const toggleBentonite = () => {
-    if(machineState === 'running'){
-      if(bentoniteState === 'off'){
-        sendCommandToServer("TBM_bentonite_start");
-        setBentoniteState('on');
-      }
-      else {
-        sendCommandToServer("TBM_bentonite_stop");
-        setBentoniteState('off');
-      }
-    }
-  }
-
-  // mock reset machine 
+  // If 'stopped', auto-reset to 'config' after 2s
   useEffect(() => {
-    console.log(machineState);
-    if(machineState === 'stopped'){
-      setTimeout(() => {
-        console.log("machine reset");
-        setMachineState('config');
+    if (machineState === 'stop') {
+      const timer = setTimeout(() => {
+        // setMachineState('config');
       }, 2000);
+      return () => clearTimeout(timer);
     }
   }, [machineState]);
+
+  // The "comms failure" overlay logic
+  const isCommsFailure = (machineState === 'comms_failure');
+
+  // The bigger "Reset" button
+  const handleReset = () => {
+    // 1) Send "TBM_reset" command to the server
+    sendCommandToServer("tbm_reset");
+    // 2) Locally set machineState to config
+    setMachineState('config');
+  };
+
+  // Gas sensor text
+  const gasStatusText = gasPPM === 0 ? 'Gas Status: Safe' : 'Gas Status: Danger';
+
   return (
-    <PageContainer>
+    <PageContainer isCommsFailure={isCommsFailure}>
+      {isCommsFailure && (
+        <Overlay>
+          <div>Machine has stale data</div>
+          <ResetButton onClick={handleReset}>
+            RESET
+          </ResetButton>
+        </Overlay>
+      )}
+
+      <GasSensorPanel gasValue={gasPPM}>
+        {gasStatusText}
+      </GasSensorPanel>
+
       <Buttons>
-        <MachineOnOff machineState={machineState} startStopToggle={toggleStartStop}/>
-        <BentoniteOnOff bentoniteState={bentoniteState} machineState={machineState} startStopToggle={toggleBentonite}/>
+        <MachineOnOff 
+          machineState={machineState} 
+          startStopToggle={toggleStartStop}
+        />
       </Buttons>
+
       <Row>
         <MotorTempGauge 
-          value={motorTemp} 
-          onChange={setMotorTemp} 
+          value={motorTemp}
+          onChange={setMotorTemp}
           machineState={machineState}
         />
-        <GasSensor 
-          value={gasPPM} 
-          onChange={setGasPPM} 
-          machineState={machineState}
-        />
-        {/**
-        colorRanges={[ fahrenheit 
-          { min: 40, max: 65, color: 'red' },      // Critical low
-          { min: 65, max: 75, color: 'yellow' },  // Warning low
-          { min: 75, max: 85, color: 'green' },   // Safe range
-          { min: 85, max: 90, color: 'yellow' },  // Warning high
-          { min: 90, max: 110, color: 'red' },     // Critical high
-        ]} */}
-      </Row>    
+      </Row>
     </PageContainer>
   );
 }

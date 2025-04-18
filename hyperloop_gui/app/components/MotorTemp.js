@@ -220,7 +220,7 @@ const MotorTempGauge = ({ value, onChange, machineState }) => {
           ))}
         </ScaleNumbers>
       </GaugeContainer>
-      <StatusMessage>Status: {isStale?  "Stale" : "Active"}</StatusMessage>
+      {/* <StatusMessage>Status: {isStale?  "Stale" : "Active"}</StatusMessage> */}
       <Slider
         type="range"
         min="0"
